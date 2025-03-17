@@ -4,12 +4,12 @@
 
 | Id | Prioridade | Tarefas | Estimativa | Requisito do Cliente | Critério de Aceitação | Sprint |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Alta | Como Usuário, eu quero criar uma conta com autenticação via e-mail e senha, para que eu possa acessar minhas tarefas com segurança. |  | 1 | O sistema deve permitir o cadastro e login seguro com validação de credenciais. |  |
-| 2 | Alta | Como Usuário, eu quero adicionar tarefas com título, descrição, prazo e prioridade, para que eu possa organizar melhor minhas atividades. |  | 2 | O sistema deve permitir a criação e edição de tarefas com esses campos obrigatórios. |  |
-| 3 | Alta | Como Usuário, eu quero organizar minhas tarefas em categorias, como "Trabalho", "Pessoal", "Estudos", para facilitar minha organização. |  | 3 | O sistema deve permitir que o usuário classifique suas tarefas em categorias. |  |
+| 1 | Alta | Como Usuário, eu quero criar uma conta com autenticação via e-mail e senha, para que eu possa acessar minhas tarefas com segurança. |  | 1 | O sistema deve permitir o cadastro e login seguro com validação de credenciais. | 1 |
+| 2 | Alta | Como Usuário, eu quero adicionar tarefas com título, descrição, prazo e prioridade, para que eu possa organizar melhor minhas atividades. |  | 2 | O sistema deve permitir a criação e edição de tarefas com esses campos obrigatórios. | 1 |
+| 3 | Alta | Como Usuário, eu quero organizar minhas tarefas em categorias, como "Trabalho", "Pessoal", "Estudos", para facilitar minha organização. |  | 3 | O sistema deve permitir que o usuário classifique suas tarefas em categorias. | 1 |
 | 4 | Alta | Como Usuário, eu quero definir metas e subdividir tarefas grandes em subtarefas menores, para que eu possa acompanhar melhor o progresso. |  | 4 | O sistema deve permitir a criação de subtarefas dentro de uma tarefa principal. |  |
 | 5 | Alta | Como Usuário, eu quero visualizar todas as minhas tarefas em uma interface de lista ou calendário, para facilitar meu acompanhamento. |  | 5 | O sistema deve exibir as tarefas do usuário em lista e calendário. |  |
-| 6 | Alta | Como Usuário, eu quero marcar tarefas como concluídas ou pendentes, para gerenciar melhor minhas atividades. |  | 6 | O sistema deve permitir a alteração do status das tarefas. |  |
+| 6 | Alta | Como Usuário, eu quero marcar tarefas como concluídas ou pendentes, para gerenciar melhor minhas atividades. |  | 6 | O sistema deve permitir a alteração do status das tarefas. | 1 |
 | 7 | Alta | Como Usuário, eu quero receber notificações sobre tarefas pendentes ou prazos próximos, para que eu não perca meus compromissos. |  | 7 | O sistema deve enviar lembretes e notificações de tarefas pendentes. |  |
 | 8 | Alta | Como Usuário, eu quero editar ou excluir tarefas já criadas, para manter minha lista sempre atualizada. |  | 8 | O sistema deve permitir edição e exclusão de tarefas. |  |
 | 9 | Média | Como Usuário, eu quero criar "tarefas recorrentes", para que eu possa automatizar atividades diárias, semanais ou mensais. |  | 9 | O sistema deve permitir a criação de tarefas recorrentes com períodos configuráveis. |  |
