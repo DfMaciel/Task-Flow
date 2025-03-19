@@ -1,51 +1,113 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Button } from "react-native";
+import { View, Text, StyleSheet,KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../authcontext";
 import { useState } from "react";
+import FilledButton from "../components/filledButtonComponent";
+import GradientBackground from "../components/linearGradientContainer";
+import OutlinedButton from "../components/outlinedButtonComponent";
+import TitleTextComponent from "../components/titleTextComponent";
+import { TextInput } from "react-native-paper";
 
 export default function TelaLogin() {
   const { login } = useAuth();
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
+  // const handleLogin = () => {
+  //   if (username.trim()) {
+  //     login(username); 
+  //     router.replace("/(tabs)/home");
+  //   }
+  // };
   
-  const handleLogin = () => {
-    if (username.trim()) {
-      login(username); 
-      router.replace("/(tabs)/home");
+  const validateEmail = (text: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setEmail(text);
+    
+    if (text.length > 0 && !emailRegex.test(text)) {
+        setEmailError("Por favor, insira um email válido");
+    } else {
+        setEmailError("");
     }
-  };
-
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Bem vindo ao TaskFlow!</Text>
-      <Text>Entre na sua conta</Text>
-      <TextInput
-        placeholder="Digite seu nome"
-        value={username}
-        onChangeText={setUsername}
-        style={{ borderWidth: 1, width: 200, padding: 10, marginVertical: 10 }}
-      />
-      <Button title="Entrar" onPress={handleLogin} />
-      <Text>ou</Text>
-      <Text onPress={() => router.push("/login/cadastro")}>Crie uma conta</Text>
-    </View>
-  );
 };
 
-const styles =  StyleSheet.create ({
-  input: { 
-    width: "100%", padding: 10, 
-    borderWidth: 1, 
-    borderRadius: 5, 
-    marginBottom: 10 
-  },
-  button: { 
-    backgroundColor: "blue", 
-    padding: 10, 
-    borderRadius: 5, 
-    width: "100%", 
-    alignItems: "center" 
-  }
+
+  return (
+    <GradientBackground style={styles.mainDiv} lavaLamp={true}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1, width: "100%" }}
+            keyboardVerticalOffset={100} 
+        >
+            <ScrollView
+                contentContainerStyle={styles.scrollContainer}
+                keyboardShouldPersistTaps="handled"
+            >
+                <View style={styles.formDiv}>
+                    <TitleTextComponent text="Bem vindo de volta!" color="white" />
+                    <TextInput 
+                        label="Email" 
+                        style={emailError && styles.inputError}
+                        value={email}
+                        onChangeText={validateEmail}
+                        outlineColor={emailError ? "#FF6B6B" : ""}
+                        keyboardType="email-address"
+                        error={!!emailError}
+                    />
+                    {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+                    
+                    <TextInput 
+                        label="Senha" 
+                        onChangeText={password => setPassword(password)}    
+                        secureTextEntry={!showPassword}
+                        right={
+                            <TextInput.Icon 
+                                icon={showPassword ? "eye-off" : "eye"} 
+                                onPress={() => setShowPassword(!showPassword)}
+                                color="#6247aa"
+                            />
+                        }
+                    />
+                    <Text style={{fontSize: 17, color: "white"}}> Esqueceu sua senha? </Text>
+                    <FilledButton text="Entrar" color="#6247aa" onPress={() => router.replace("/(tabs)/home")} />
+                    <Text style={{textAlign: "center", fontSize: 20, color: "white"}}> ou </Text>
+                    <OutlinedButton text="Fazer cadastro" textColor="white" onPress={() => router.push("/login/cadastro")} />
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
+    </GradientBackground>
+)
+}
+
+const styles = StyleSheet.create({
+mainDiv: {
+    flex: 1,
+    padding: 20,
+    position: 'relative',
+    overflow: 'hidden',
+},
+scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+},
+formDiv: {
+    padding: 10,
+    width: "100%",
+    zIndex: 2,
+    gap: 15,
+    marginTop: 80
+},
+errorText: {
+    color: "#FF6B6B",
+    fontSize: 12,
+    marginTop: -5,
+    marginBottom: 5,
+},
+inputError: {
+    borderColor: "#FF6B6B",
+},
 });

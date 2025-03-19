@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { Button } from "react-native-paper";
 import TitleTextComponent from "../components/titleTextComponent";
 import GradientBackground from "../components/linearGradientContainer";
+import FilledButton from "../components/filledButtonComponent";
+import OutlinedButton from "../components/outlinedButtonComponent";
 
 export default function IndexPage() {
     return (
@@ -11,31 +13,15 @@ export default function IndexPage() {
                 <TitleTextComponent text="TaskFlow" color="white" />
                 <Text style={{fontSize: 17, color:"white"}}>Seu companheiro no gerenciamento de tarefas</Text>
                 <View style={styles.buttonDiv}>
-                    <Button 
-                        mode="contained" 
-                        style={styles.buttonFilled}
-                        labelStyle={styles.buttonText}
-                        buttonColor="#FFFFFF"
-                        textColor="#6247aa"
-                        onPress={() => router.push("/login/login")}> 
-                        Entrar
-                    </Button>
-                    <Button 
-                        mode="outlined" 
-                        style={styles.buttonOutlined} 
-                        labelStyle={styles.buttonText}
-                        textColor="white"
-                        onPress={() => router.push("/login/cadastro")}
-                    >
-                        Cadastre-se
-                    </Button>
+                    <FilledButton text="Entrar" color="white" textColor="#6247aa" onPress={() => router.push("/login/login")} />
+                    <OutlinedButton text="Cadastrar" textColor="white" onPress={() => router.push("/login/cadastro")} />
                 </View>
             </View>
         </GradientBackground>
     )
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
     mainDiv: {
         flex: 1,
         alignItems: "center",
@@ -54,16 +40,5 @@ const styles = StyleSheet.create({
         marginTop: 40,
         justifyContent: "space-between"
     },
-    buttonFilled: {
-        width: "100%",
-    },
-    buttonOutlined: {
-        width: "100%",
-        marginTop: 15,
-        borderColor: "white"
-    },
-    buttonText: {
-        fontSize: 15,  
-        fontWeight: "bold"  
-    }
+    
 });
