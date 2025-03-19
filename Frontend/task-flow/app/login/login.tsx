@@ -89,6 +89,7 @@ mainDiv: {
     padding: 20,
     position: 'relative',
     overflow: 'hidden',
+    alignItems: "center",
 },
 scrollContainer: {
     flexGrow: 1,
@@ -98,6 +99,7 @@ formDiv: {
     padding: 10,
     width: "100%",
     zIndex: 2,
+    elevation: 10,
     gap: 15,
     marginTop: 80
 },

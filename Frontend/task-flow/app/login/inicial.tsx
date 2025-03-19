@@ -29,12 +29,15 @@ export const styles = StyleSheet.create({
         padding: 20,
         position: 'relative',
         overflow: 'hidden',
+        zIndex: 1,
     },
     contentDiv: {
         padding: 10,
-        marginBottom: 40,
         width: "100%",
-        zIndex: 2,
+        height: "93%",
+        justifyContent: "flex-end",
+        zIndex: 100,
+        elevation: 100,
     },
     buttonDiv: {
         marginTop: 40,

@@ -42,7 +42,9 @@ export default function GradientBackground({ children, colors = ["#6247aa", "#a5
                             startPosition={height + 90} endPosition={-280} />
                 </View>
               )}
-            {children}
+            <View style={styles.contentWrapper}>
+                {children}
+            </View>
         </LinearGradient>
     );
 }
@@ -55,9 +57,17 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
         zIndex: 1,
+        elevation: 1,
         justifyContent: 'center', 
         alignItems: 'center', 
         pointerEvents: 'none',
         overflow: 'visible', 
     },
+    contentWrapper: {
+        zIndex: 100, 
+        elevation: 100,
+        width: "100%",
+        height: "100%",
+        position: 'absolute',
+    }
 });

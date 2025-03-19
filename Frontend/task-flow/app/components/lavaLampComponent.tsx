@@ -72,6 +72,7 @@ export const LavaLamp = ({ size, left, delay, duration, startPosition, endPositi
               { translateY: moveAnim },
               { scale: sizeAnim }
             ],
+            zIndex: 1,
           },
         ]}
       />
