@@ -4,6 +4,7 @@ import com.example.task_flow.controllers.Dto.AutenticacaoDto;
 import com.example.task_flow.entities.Usuario;
 import com.example.task_flow.repository.UsuarioRepository;
 import com.example.task_flow.services.AutenticacaoService;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +22,6 @@ import java.util.Optional;
 @RequestMapping("/autenticacao")
 public class AutenticacaoController {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
     @Autowired
     AutenticacaoService autenticacaoService;
 
@@ -32,6 +30,7 @@ public class AutenticacaoController {
 
     @PostMapping()
     public ResponseEntity<?> autenticar(@RequestBody AutenticacaoDto autenticacaoDto) {
+        System.out.println(autenticacaoDto);
         Optional<Usuario> usuarioOpcional = autenticacaoService.autenticar(autenticacaoDto.email(), autenticacaoDto.senha());
         if (usuarioOpcional.isPresent()) {
             Usuario usuario = usuarioOpcional.get();
@@ -49,8 +48,8 @@ public class AutenticacaoController {
     public ResponseEntity<?> renovarToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
         try {
-            String email = Jwts.parser().setSigningKey(jwtSecret)
-                    .parseClaimsJws(refreshToken).getBody().getSubject();
+            Claims claims = autenticacaoService.parseToken(refreshToken);
+            String email = claims.getSubject();
             Optional<Usuario> userOpt = usuarioRepository.findByEmail(email);
             if (userOpt.isPresent()) {
                 String newAccessToken = autenticacaoService.gerarTokenAcesso(userOpt.get());

@@ -2,6 +2,7 @@ package com.example.task_flow.services;
 
 import com.example.task_flow.entities.Usuario;
 import com.example.task_flow.repository.UsuarioRepository;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -17,24 +18,31 @@ import java.util.Optional;
 @Service
 public class AutenticacaoService {
 
+    private final String jwtSecret;
+    private final long jwtExpirationMs;
+    private final long jwtRefreshExpirationMs;
+    private final SecretKey key;
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${jwt.expiration}")
-    private String jwtExpirationMs;
-
-    @Value("${jwt.refresh.expiration}")
-    private String jwtRefreshExpirationMs;
-
-    SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    public AutenticacaoService(
+                               @Value("${jwt.secret}") String jwtSecret,
+                               @Value("${jwt.expiration}") String jwtExpirationMs,
+                               @Value("${jwt.refresh.expiration}") String jwtRefreshExpirationMs) {
+        this.jwtSecret = jwtSecret;
+        this.jwtExpirationMs = Long.parseLong(jwtExpirationMs.trim());
+        this.jwtRefreshExpirationMs = Long.parseLong(jwtRefreshExpirationMs.trim());
+        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public Optional<Usuario> autenticar(String email, String senha) {
         Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
-        if (usuario.isPresent() && usuario.get().getSenha().equals(senha)) {
-            return usuario;
+        if (usuario.isPresent()) {
+                String senhaUsuario = usuario.get().getSenha();
+                if (senha.equals(senhaUsuario)) {
+                    return usuario;
+                }
         }
         return Optional.empty();
     }
@@ -55,5 +63,13 @@ public class AutenticacaoService {
                 .setExpiration(new Date((new Date()).getTime() + jwtRefreshExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    public Claims parseToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
