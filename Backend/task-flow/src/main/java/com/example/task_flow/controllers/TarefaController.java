@@ -77,7 +77,7 @@ public class TarefaController {
         }
         Tarefa tarefa = tarefaOptional.get();
         if (!tarefa.getUsuario().equals(usuarioOptional.get())) {
-            return ResponseEntity.badRequest().body("Usuário não tem permissão para atualizar a tarefa");
+            return ResponseEntity.status(403).body("Usuário não tem permissão para atualizar a tarefa");
         }
         try {
             tarefaService.atualizarTarefa(tarefa, atualizarTarefaDto);
@@ -100,7 +100,7 @@ public class TarefaController {
         }
         Tarefa tarefa = tarefaOptional.get();
         if (!tarefa.getUsuario().equals(usuarioOptional.get())) {
-            return ResponseEntity.badRequest().body("Usuário não tem permissão para deletar a tarefa");
+            return ResponseEntity.status(403).body("Usuário não tem permissão para deletar a tarefa");
         }
         tarefaRepository.delete(tarefa);
         return ResponseEntity.ok("Tarefa deletada");
