@@ -9,8 +9,7 @@ import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +24,7 @@ public class TarefaController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @GetMapping()
     public ResponseEntity<?> listarTarefas(Authentication authentication) {
         String email = (String) authentication.getPrincipal();
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
@@ -35,11 +35,13 @@ public class TarefaController {
         return ResponseEntity.ok(tarefas);
     }
 
+    @GetMapping("/{id}")
     public ResponseEntity<?> buscarTarefa(Long id) {
         return tarefaService.buscarTarefa(id);
     }
 
-    public ResponseEntity<?> cadastrarTarefa(Authentication authentication, CadastroTarefaDto cadastroTarefaDto) {
+    @PostMapping()
+    public ResponseEntity<?> cadastrarTarefa(Authentication authentication, @RequestBody CadastroTarefaDto cadastroTarefaDto) {
         String email = (String) authentication.getPrincipal();
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
         if (usuarioOptional.isEmpty()) {

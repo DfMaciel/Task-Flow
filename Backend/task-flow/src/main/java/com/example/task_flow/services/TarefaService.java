@@ -34,6 +34,7 @@ public class TarefaService {
     }
 
     public ResponseEntity<?> cadastrarTarefa(Usuario usuario, @RequestBody CadastroTarefaDto cadastroTarefaDto) {
+        System.out.println("TarefaDto" + cadastroTarefaDto);
         Tarefa tarefa = new Tarefa();
         tarefa.setUsuario(usuario);
         tarefa.setTitulo(cadastroTarefaDto.titulo());
@@ -43,6 +44,7 @@ public class TarefaService {
         cadastroTarefaDto.prazo().ifPresent(tarefa::setPrazo);
         LocalDateTime dataAtual = LocalDateTime.now();
         tarefa.setDataCriacao(dataAtual);
+        System.out.println("Tarefa" + tarefa);
         Tarefa tarefaSalva = tarefaRepository.save(tarefa);
         return ResponseEntity.ok(tarefaSalva);
     }

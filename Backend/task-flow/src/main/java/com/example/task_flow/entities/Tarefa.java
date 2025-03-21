@@ -1,5 +1,7 @@
 package com.example.task_flow.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -50,6 +52,7 @@ public class Tarefa {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonIgnoreProperties("tarefas")
     private Usuario usuario;
 
     public Tarefa() {
@@ -235,6 +238,6 @@ public class Tarefa {
     }
 
     public String toString() {
-        return "Tarefa(id=" + this.getId() + ", titulo=" + this.getTitulo() + ", descricao=" + this.getDescricao() + ", status=" + this.getStatus() + ", dataCriacao=" + this.getDataCriacao() + ", dataInicio=" + this.getDataInicio() + ", dataConclusao=" + this.getDataConclusao() + ", prazo=" + this.getPrazo() + ", prioridade=" + this.getPrioridade() + ", tempoEstimado=" + this.getTempoEstimado() + ", notas=" + this.getNotas() + ", usuario=" + this.getUsuario() + ")";
+        return "Tarefa(id=" + this.getId() + ", titulo=" + this.getTitulo() + ", descricao=" + this.getDescricao() + ", status=" + this.getStatus() + ", dataCriacao=" + this.getDataCriacao() + ", dataInicio=" + this.getDataInicio() + ", dataConclusao=" + this.getDataConclusao() + ", prazo=" + this.getPrazo() + ", prioridade=" + this.getPrioridade() + ", tempoEstimado=" + this.getTempoEstimado() + ", notas=" + this.getNotas() + ", usuarioId=" + (this.getUsuario() != null ? this.usuario.getId().toString() : null) + ")";
     }
 }

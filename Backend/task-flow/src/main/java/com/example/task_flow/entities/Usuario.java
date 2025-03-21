@@ -1,5 +1,6 @@
 package com.example.task_flow.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class Usuario {
     private String senha;
 
     @OneToMany(mappedBy = "usuario")
+    @JsonIgnoreProperties("usuario")
     private List<Tarefa> tarefas = new ArrayList<>();
 
     public Usuario() {
@@ -113,6 +115,6 @@ public class Usuario {
     }
 
     public String toString() {
-        return "Usuario(id=" + this.getId() + ", nome=" + this.getNome() + ", email=" + this.getEmail() + ", senha=" + this.getSenha() + ", tarefas=" + this.getTarefas() + ")";
+        return "Usuario(id=" + this.getId() + ", nome=" + this.getNome() + ", email=" + this.getEmail() + ", senha=" + this.getSenha() + ", tarefas=" + (this.tarefas != null ? "[" + this.tarefas.size() + " items]" : "null") + ")";
     }
 }
