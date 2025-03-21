@@ -2,6 +2,8 @@ package com.example.task_flow.entities;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -20,16 +22,19 @@ public class Tarefa {
     private String descricao;
 
     @Column
-    private String status;
+    private String status = "Em andamento";
 
     @Column
-    private String dataCriacao;
+    private LocalDateTime dataCriacao;
 
     @Column
-    private String dataConclusao;
+    private LocalDateTime dataInicio;
 
     @Column
-    private String prazo;
+    private LocalDateTime dataConclusao;
+
+    @Column
+    private LocalDate prazo;
 
     @Column
     private String prioridade;
@@ -66,15 +71,19 @@ public class Tarefa {
         return this.status;
     }
 
-    public String getDataCriacao() {
+    public LocalDateTime getDataCriacao() {
         return this.dataCriacao;
     }
 
-    public String getDataConclusao() {
+    public LocalDateTime getDataInicio() {
+        return this.dataInicio;
+    }
+
+    public LocalDateTime getDataConclusao() {
         return this.dataConclusao;
     }
 
-    public String getPrazo() {
+    public LocalDate getPrazo() {
         return this.prazo;
     }
 
@@ -110,15 +119,19 @@ public class Tarefa {
         this.status = status;
     }
 
-    public void setDataCriacao(String dataCriacao) {
+    public void setDataCriacao(LocalDateTime dataCriacao) {
         this.dataCriacao = dataCriacao;
     }
 
-    public void setDataConclusao(String dataConclusao) {
+    public void setDataInicio(LocalDateTime dataInicio) {
+        this.dataInicio = dataInicio;
+    }
+
+    public void setDataConclusao(LocalDateTime dataConclusao) {
         this.dataConclusao = dataConclusao;
     }
 
-    public void setPrazo(String prazo) {
+    public void setPrazo(LocalDate prazo) {
         this.prazo = prazo;
     }
 
@@ -158,6 +171,10 @@ public class Tarefa {
         final Object this$dataCriacao = this.getDataCriacao();
         final Object other$dataCriacao = other.getDataCriacao();
         if (this$dataCriacao == null ? other$dataCriacao != null : !this$dataCriacao.equals(other$dataCriacao))
+            return false;
+        final Object this$dataInicio = this.getDataInicio();
+        final Object other$dataInicio = other.getDataInicio();
+        if (this$dataInicio == null ? other$dataInicio != null : !this$dataInicio.equals(other$dataInicio))
             return false;
         final Object this$dataConclusao = this.getDataConclusao();
         final Object other$dataConclusao = other.getDataConclusao();
@@ -200,6 +217,8 @@ public class Tarefa {
         result = result * PRIME + ($status == null ? 43 : $status.hashCode());
         final Object $dataCriacao = this.getDataCriacao();
         result = result * PRIME + ($dataCriacao == null ? 43 : $dataCriacao.hashCode());
+        final Object $dataInicio = this.getDataInicio();
+        result = result * PRIME + ($dataInicio == null ? 43 : $dataInicio.hashCode());
         final Object $dataConclusao = this.getDataConclusao();
         result = result * PRIME + ($dataConclusao == null ? 43 : $dataConclusao.hashCode());
         final Object $prazo = this.getPrazo();
@@ -216,6 +235,6 @@ public class Tarefa {
     }
 
     public String toString() {
-        return "Tarefa(id=" + this.getId() + ", titulo=" + this.getTitulo() + ", descricao=" + this.getDescricao() + ", status=" + this.getStatus() + ", dataCriacao=" + this.getDataCriacao() + ", dataConclusao=" + this.getDataConclusao() + ", prazo=" + this.getPrazo() + ", prioridade=" + this.getPrioridade() + ", tempoEstimado=" + this.getTempoEstimado() + ", notas=" + this.getNotas() + ", usuario=" + this.getUsuario() + ")";
+        return "Tarefa(id=" + this.getId() + ", titulo=" + this.getTitulo() + ", descricao=" + this.getDescricao() + ", status=" + this.getStatus() + ", dataCriacao=" + this.getDataCriacao() + ", dataInicio=" + this.getDataInicio() + ", dataConclusao=" + this.getDataConclusao() + ", prazo=" + this.getPrazo() + ", prioridade=" + this.getPrioridade() + ", tempoEstimado=" + this.getTempoEstimado() + ", notas=" + this.getNotas() + ", usuario=" + this.getUsuario() + ")";
     }
 }
