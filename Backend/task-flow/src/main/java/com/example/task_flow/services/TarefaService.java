@@ -1,5 +1,6 @@
 package com.example.task_flow.services;
 
+import com.example.task_flow.controllers.Dto.AtualizarTarefaDto;
 import com.example.task_flow.controllers.Dto.CadastroTarefaDto;
 import com.example.task_flow.entities.Tarefa;
 import com.example.task_flow.entities.Usuario;
@@ -29,8 +30,12 @@ public class TarefaService {
         return tarefas;
     }
 
-    public ResponseEntity<?> buscarTarefa(Long id) {
-        return ResponseEntity.ok(tarefaRepository.findById(id));
+    public Tarefa buscarTarefa(Long id) throws Exception {
+        Optional<Tarefa> tarefa = tarefaRepository.findById(id);
+        if (tarefa.isEmpty()) {
+            throw new Exception("Tarefa não encontrada");
+        }
+        return tarefa.get();
     }
 
     public ResponseEntity<?> cadastrarTarefa(Usuario usuario, @RequestBody CadastroTarefaDto cadastroTarefaDto) {
@@ -47,5 +52,37 @@ public class TarefaService {
         System.out.println("Tarefa" + tarefa);
         Tarefa tarefaSalva = tarefaRepository.save(tarefa);
         return ResponseEntity.ok(tarefaSalva);
+    }
+
+    public void atualizarTarefa(Tarefa tarefa, AtualizarTarefaDto atualizarTarefaDto) {
+        if (atualizarTarefaDto.titulo().isPresent()) {
+            tarefa.setTitulo(atualizarTarefaDto.titulo().get());
+        }
+        if (atualizarTarefaDto.descricao().isPresent()) {
+            tarefa.setDescricao(atualizarTarefaDto.descricao().get());
+        }
+        if (atualizarTarefaDto.status().isPresent()) {
+            tarefa.setStatus(atualizarTarefaDto.status().get());
+        }
+        if (atualizarTarefaDto.prioridade().isPresent()) {
+            tarefa.setPrioridade(atualizarTarefaDto.prioridade().get());
+        }
+        if (atualizarTarefaDto.tempoEstimado().isPresent()) {
+            tarefa.setTempoEstimado(atualizarTarefaDto.tempoEstimado().get());
+        }
+        if (atualizarTarefaDto.prazo().isPresent()) {
+            tarefa.setPrazo(atualizarTarefaDto.prazo().get());
+        }
+        if (atualizarTarefaDto.dataInicio().isPresent()) {
+            tarefa.setDataInicio(atualizarTarefaDto.dataInicio().get());
+        }
+        if (atualizarTarefaDto.dataConclusao().isPresent()) {
+            tarefa.setDataConclusao(atualizarTarefaDto.dataConclusao().get());
+        }
+        tarefaRepository.save(tarefa);
+    }
+
+    public void deletarTarefa(Long id) {
+        tarefaRepository.deleteById(id);
     }
 }

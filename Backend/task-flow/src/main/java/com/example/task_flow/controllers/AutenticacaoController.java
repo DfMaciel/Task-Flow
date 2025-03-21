@@ -30,7 +30,6 @@ public class AutenticacaoController {
 
     @PostMapping()
     public ResponseEntity<?> autenticar(@RequestBody AutenticacaoDto autenticacaoDto) {
-        System.out.println(autenticacaoDto);
         Optional<Usuario> usuarioOpcional = autenticacaoService.autenticar(autenticacaoDto.email(), autenticacaoDto.senha());
         if (usuarioOpcional.isPresent()) {
             Usuario usuario = usuarioOpcional.get();
