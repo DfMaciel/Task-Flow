@@ -19,7 +19,7 @@ public class UsuarioService {
     public Long cadastrarUsuario(CadastroUsuarioDto usuario) throws Exception {
         Usuario verificarUsuario = usuarioRepository.findByEmail(usuario.email()).orElse(null);
         if (verificarUsuario != null) {
-            throw new Exception("Usuário já cadastrado");
+            throw new Exception("Esse email já está em uso!");
         }
         var usuarioEntity = new Usuario();
         usuarioEntity.setNome(usuario.nome());

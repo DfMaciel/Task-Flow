@@ -5,16 +5,16 @@ import { useAuth } from "../authcontext";
 import { router } from "expo-router";
 
 const HomeScreen = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     await logout(); 
-    router.replace("/login/login"); 
+    router.replace("/login/logar"); 
   };
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Bem-vindo, {user}!</Text>
+      <Text>Bem-vindo!</Text>
       <Button title="Sair" onPress={handleLogout} />
     </View>
   );

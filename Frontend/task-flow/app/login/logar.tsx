@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet,KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { View, Text, StyleSheet,KeyboardAvoidingView, Platform, ScrollView, Keyboard } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../authcontext";
 import { useState } from "react";
@@ -37,14 +37,17 @@ const handleLogin = async () => {
     try {
       const result = await login(email, password);
       if (result.success) {
+        Keyboard.dismiss();
         router.replace("/(tabs)/home");
-      } else {
-        setError(result.message || "Erro ao fazer login");
       }
-    } catch (error) {
-      setError("Ocorreu um erro ao tentar fazer login");
+      if (!result.success) {
+        setError(result.message);
+      }
+    } catch (error:any) {
+        let errorMessage = error.message;
+        setError(errorMessage);
     }
-  };
+};
 
 
   return (
@@ -85,7 +88,7 @@ const handleLogin = async () => {
                     />
                     {error ? <Text style={styles.errorText}>{error}</Text> : null}
                     <Text style={{fontSize: 17, color: "white"}}> Esqueceu sua senha? </Text>
-                    <FilledButton text="Entrar" color="#6247aa" onPress={() => router.replace("/(tabs)/home")} />
+                    <FilledButton text="Entrar" color="#6247aa" onPress={() => handleLogin()} />
                     <Text style={{textAlign: "center", fontSize: 20, color: "white"}}> ou </Text>
                     <OutlinedButton text="Fazer cadastro" textColor="white" onPress={() => router.push("/login/cadastro")} />
                 </View>

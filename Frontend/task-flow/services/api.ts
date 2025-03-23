@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import Constants from 'expo-constants';
 import { clearTokens, getRefreshToken, getToken, setTokens } from './tokenStorage';
 
@@ -68,13 +68,19 @@ export async function login(email: string, senha: string) {
           senha
       });
 
-      const { token, refreshToken } = response.data;
+      console.log(response);
 
-      await setTokens(token, refreshToken);
-
-      return { success: true };
-  } catch (error:any) {
-      return { success: false, message: error.response?.data?.message || "Erro ao fazer login" };
+      if (response.status == 200) {
+        const { tokenAcesso, refreshToken } = response.data;
+        await setTokens(tokenAcesso, refreshToken);
+        return { success: true };
+      }
+      if (response.status == 401) {
+        return { success: false, message: response.data.message };
+      }
+  } catch (error) {
+      let errorMessage = (error as AxiosError).response?.data as any;
+      throw new Error(errorMessage);
   }
 }
 

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { login as loginService, logout as logoutService } from "../services/api";
 import { getToken } from "../services/tokenStorage";
+import { AxiosError } from "axios";
 
 interface AuthContextType {
   userToken: string | null;
@@ -24,11 +25,19 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const login = async (email: string, senha: string) => {
-    const result = await loginService(email, senha);
-    if (result.success) {
-      setUserToken(await getToken());
-    }
-    return result;
+    // try {
+      const result = await loginService(email, senha);
+      if (result?.success) {
+        setUserToken(await getToken());
+        return { success: result.success};
+      }
+      else{
+        return { success: result?.success, message: result?.message };
+      }
+    // } catch (error) {
+    //     let errorMessage = (error as AxiosError).response?.data as any;
+    //     throw new Error(errorMessage);
+    // } 
   };
 
   const logout = async () => {

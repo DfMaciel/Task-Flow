@@ -13,7 +13,7 @@ export default function IndexPage() {
                 <TitleTextComponent text="TaskFlow" color="white" />
                 <Text style={{fontSize: 17, color:"white"}}>Seu companheiro no gerenciamento de tarefas</Text>
                 <View style={styles.buttonDiv}>
-                    <FilledButton text="Entrar" color="white" textColor="#6247aa" onPress={() => router.push("/login/login")} />
+                    <FilledButton text="Entrar" color="white" textColor="#6247aa" onPress={() => router.push("/login/logar")} />
                     <OutlinedButton text="Cadastrar" textColor="white" onPress={() => router.push("/login/cadastro")} />
                 </View>
             </View>

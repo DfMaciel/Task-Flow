@@ -1,4 +1,4 @@
-import { View, Text, Button, StyleSheet, Platform, KeyboardAvoidingView, ScrollView} from "react-native";
+import { View, Text, Button, StyleSheet, Platform, KeyboardAvoidingView, ScrollView, Keyboard} from "react-native";
 import { useRouter } from "expo-router";
 import GradientBackground from "../../components/linearGradientContainer";
 import TitleTextComponent from "../../components/titleTextComponent";
@@ -43,16 +43,20 @@ export default function TelaCadastro() {
             senha: password,
         };
 
-        const resposta = await usuarioCadastroService(usuarioCadastro);
+        try {
+            const resposta = await usuarioCadastroService(usuarioCadastro);
 
-        console.log(resposta);
+            console.log(resposta);
 
-        if (!resposta.success) {
-            setError(resposta.message);
-        } else {
-            router.replace("/login/login");
-        }
-    };
+            if (resposta.status === 201) {
+                Keyboard.dismiss();
+                router.navigate("/login/logar");
+            }
+            } catch (error:any) {
+                let errorMessage = error.message;
+                setError(errorMessage);
+            }
+        };
 
     return (
         <GradientBackground style={styles.mainDiv} lavaLamp={true}>
@@ -98,7 +102,7 @@ export default function TelaCadastro() {
                         <Text style={{fontSize: 17, color: "white"}}> Esqueceu sua senha? </Text>
                         <FilledButton text="Cadastrar" color="#6247aa" onPress={() => handleCadastro()} />
                         <Text style={{textAlign: "center", fontSize: 20, color: "white"}}> ou </Text>
-                        <OutlinedButton text="Fazer login" textColor="white" onPress={() => router.navigate('/login/login')} />
+                        <OutlinedButton text="Fazer login" textColor="white" onPress={() => router.navigate('/login/logar')} />
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
