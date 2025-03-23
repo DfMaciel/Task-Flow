@@ -12,6 +12,11 @@ export async function getRefreshToken() {
 export async function setTokens(token: string, refreshToken: string) {
   await AsyncStorage.setItem("token", token);
   await AsyncStorage.setItem("refreshToken", refreshToken);
+  console.log("Tokens set fodas", token, refreshToken);
+}
+
+export async function setToken(token: string) {
+  await AsyncStorage.setItem("token", token);
 }
 
 export async function clearTokens() {

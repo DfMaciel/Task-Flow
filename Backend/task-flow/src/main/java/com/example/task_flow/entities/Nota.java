@@ -1,5 +1,6 @@
 package com.example.task_flow.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -17,6 +18,7 @@ public class Nota {
     @Column
     private String dataCriacao;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "tarefa_id")
     private Tarefa tarefa;

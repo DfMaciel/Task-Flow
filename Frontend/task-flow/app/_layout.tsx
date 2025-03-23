@@ -1,6 +1,7 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import AuthProvider,{ useAuth } from "./authcontext";
 import { useEffect } from "react";
+import { authEmitter } from "@/services/authEmiter";
 
 function ProtectedLayout() {
   const { userToken, loading } = useAuth();
@@ -15,7 +16,6 @@ function ProtectedLayout() {
       try {
         const inAuthGroup = segments?.[0] === "login";
         const isNotFound = segments?.[0] === "+not-found";
-        console.log(userToken, "fodinha2000", inAuthGroup);
         
         if (isNotFound) {
           if (userToken) {
@@ -29,6 +29,9 @@ function ProtectedLayout() {
         } else if (userToken && inAuthGroup) {
           await router?.replace("/(tabs)/home");
         }
+          else if (userToken && inAuthGroup) {
+            await router?.replace("/(tabs)/home");
+          }
       } catch (e) {
         console.warn("Navigation error:", e);
       } finally {
@@ -39,9 +42,14 @@ function ProtectedLayout() {
   }, [userToken, segments, loading, router]);
 
   useEffect(() => {
-    console.log("Current route segments:", segments);
-    console.log("Current route:", segments.join("/"));
-  }, [segments]);
+    const handleLogout = () => {
+      router.replace("/login/inicial");
+    };
+    authEmitter.on("logout", handleLogout);
+    return () => {
+      authEmitter.off("logout", handleLogout);
+    };
+  }, [router]);
   
   return (
     <Stack screenOptions={{ headerShown: false }}>

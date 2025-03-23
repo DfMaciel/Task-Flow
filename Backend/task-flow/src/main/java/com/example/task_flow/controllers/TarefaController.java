@@ -31,6 +31,7 @@ public class TarefaController {
 
     @GetMapping()
     public ResponseEntity<?> listarTarefas(Authentication authentication) {
+        System.out.println("Listando tarefas: " + authentication);
         String email = (String) authentication.getPrincipal();
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
         if (usuarioOptional.isEmpty()) {

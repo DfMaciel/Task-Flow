@@ -46,14 +46,19 @@ public class AutenticacaoController {
     @PostMapping("/renovar")
     public ResponseEntity<?> renovarToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
+        System.out.println("Refresh token: " + refreshToken);
         try {
             Claims claims = autenticacaoService.parseToken(refreshToken);
             String email = claims.getSubject();
+            System.out.println("Email: " + email);
             Optional<Usuario> userOpt = usuarioRepository.findByEmail(email);
             if (userOpt.isPresent()) {
+                System.out.println("Usuário encontrado: " + userOpt.get());
                 String newAccessToken = autenticacaoService.gerarTokenAcesso(userOpt.get());
+                System.out.println("Novo token de acesso: " + newAccessToken);
                 Map<String, String> response = new HashMap<>();
                 response.put("accessToken", newAccessToken);
+                System.out.println("Novo token de acesso: " + newAccessToken);
                 return ResponseEntity.ok(response);
             }
         } catch (Exception e) {

@@ -19,13 +19,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain (HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain (HttpSecurity http, JwtAuthenticationEntryPoint entryPoint) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(entryPoint)
+                )
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(HttpMethod.POST, "/autenticacao", "/autenticacao/refresh", "/usuarios").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/autenticacao", "/autenticacao/renovar", "/usuarios").permitAll()
                         .anyRequest().authenticated()
                 );
 

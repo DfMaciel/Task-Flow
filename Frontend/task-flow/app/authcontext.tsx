@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, senha: string) => Promise<any>;
   logout: () => Promise<void>;
   loading: boolean;
+  refreshToken: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -23,7 +24,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const refreshToken = await getRefreshToken();
       setUserToken(token);
       setRefreshToken(refreshToken);
-      console.log(token, "fode no pelo", refreshToken);
       setLoading(false);
     };
     loadToken();
@@ -53,7 +53,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ userToken, login, logout, loading }}>
+    <AuthContext.Provider value={{ userToken, login, logout, loading, refreshToken }}>
       {children}
     </AuthContext.Provider>
   );
