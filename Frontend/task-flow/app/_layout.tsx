@@ -14,7 +14,16 @@ function ProtectedLayout() {
       
       try {
         const inAuthGroup = segments?.[0] === "login";
+        const isNotFound = segments?.[0] === "+not-found";
+        console.log(userToken, "fodinha2000", inAuthGroup);
         
+        if (isNotFound) {
+          if (userToken) {
+            await router?.replace("/(tabs)/home");
+          } else {
+            await router?.replace("/login/inicial");
+          }
+        }
         if (!userToken && !inAuthGroup) {
           await router?.replace("/login/inicial");
         } else if (userToken && inAuthGroup) {
@@ -29,6 +38,11 @@ function ProtectedLayout() {
     prepareApp();
   }, [userToken, segments, loading, router]);
 
+  useEffect(() => {
+    console.log("Current route segments:", segments);
+    console.log("Current route:", segments.join("/"));
+  }, [segments]);
+  
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />

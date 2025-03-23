@@ -1,23 +1,28 @@
 // app/home.tsx
 
-import { View, Text, Button } from "react-native";
+import { View, Text, Button, StyleSheet } from "react-native";
 import { useAuth } from "../authcontext";
 import { router } from "expo-router";
+import AdicionarIcon from "@/components/adicionarIcon";
 
-const HomeScreen = () => {
-  const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout(); 
-    router.replace("/login/logar"); 
-  };
+const TelaHome = () => {
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Bem-vindo!</Text>
-      <Button title="Sair" onPress={handleLogout} />
+    <View style={styles.container}>
+      <AdicionarIcon/>
     </View>
   );
 };
 
-export default HomeScreen;
+export default TelaHome;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  button: {
+    margin: 10,
+  },
+});

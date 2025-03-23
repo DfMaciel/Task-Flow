@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { login as loginService, logout as logoutService } from "../services/api";
-import { getToken } from "../services/tokenStorage";
+import { getRefreshToken, getToken } from "../services/tokenStorage";
 import { AxiosError } from "axios";
 
 interface AuthContextType {
@@ -11,14 +11,19 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userToken, setUserToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadToken = async () => {
       const token = await getToken();
+      const refreshToken = await getRefreshToken();
       setUserToken(token);
+      setRefreshToken(refreshToken);
+      console.log(token, "fode no pelo", refreshToken);
       setLoading(false);
     };
     loadToken();
@@ -29,6 +34,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const result = await loginService(email, senha);
       if (result?.success) {
         setUserToken(await getToken());
+        setRefreshToken(await getRefreshToken());
         return { success: result.success};
       }
       else{
@@ -43,6 +49,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     await logoutService();
     setUserToken(null);
+    setRefreshToken(null);
   };
 
   return (
