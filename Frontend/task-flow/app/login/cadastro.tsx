@@ -6,6 +6,8 @@ import { TextInput } from "react-native-paper";
 import { useState } from "react";
 import FilledButton from "../components/filledButtonComponent";
 import OutlinedButton from "../components/outlinedButtonComponent";
+import { UsuarioCadastroInterface } from "../types/UsuarioInterface";
+import usuarioCadastroService from "../services/usuario/usuarioCadastroService";
 
 export default function TelaCadastro() {
     const router = useRouter();
@@ -14,6 +16,7 @@ export default function TelaCadastro() {
     const [name, setName] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState("");
+    const [error, setError] = useState("");
     
     const validateEmail = (text: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,6 +28,26 @@ export default function TelaCadastro() {
             setEmailError("");
         }
     };
+
+    const handleCadastro = async () => {
+        if (emailError) return;
+
+        const usuarioCadastro: UsuarioCadastroInterface = {
+            nome: name,
+            email,
+            senha: password,
+        };
+
+        const resposta = await usuarioCadastroService(usuarioCadastro);
+
+        if (!resposta.success) {
+            setError(resposta.message);
+        } else {
+            router.replace("/login/login");
+        }
+    };
+
+
 
     return (
         <GradientBackground style={styles.mainDiv} lavaLamp={true}>
@@ -69,7 +92,7 @@ export default function TelaCadastro() {
                         <Text style={{fontSize: 17, color: "white"}}> Esqueceu sua senha? </Text>
                         <FilledButton text="Cadastrar" color="#6247aa" onPress={() => router.replace("/(tabs)/home")} />
                         <Text style={{textAlign: "center", fontSize: 20, color: "white"}}> ou </Text>
-                        <OutlinedButton text="Fazer login" textColor="white" onPress={() => router.push("/login/login")} />
+                        <OutlinedButton text="Fazer login" textColor="white" onPress={() => handleCadastro()} />
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
@@ -88,6 +111,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         justifyContent: "center",
+        alignItems: "center",
     },
     formDiv: {
         padding: 10,

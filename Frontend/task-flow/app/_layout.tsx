@@ -1,21 +1,33 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import AuthProvider, { useAuth } from "./authcontext";
+import AuthProvider,{ useAuth } from "./authcontext";
 import { useEffect } from "react";
 
 function ProtectedLayout() {
-  const { user } = useAuth();
+  const { userToken, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   
+  
   useEffect(() => {
-    const inAuthGroup = segments[0] === "login";
-    
-    if (!user && !inAuthGroup) {
-      router.replace("/login/inicial");
-    } else if (user && inAuthGroup) {
-      router.replace("/(tabs)/home");
+    async function prepareApp() {
+      if (loading) return;
+      
+      try {
+        const inAuthGroup = segments?.[0] === "login";
+        
+        if (!userToken && !inAuthGroup) {
+          await router?.replace("/login/inicial");
+        } else if (userToken && inAuthGroup) {
+          await router?.replace("/(tabs)/home");
+        }
+      } catch (e) {
+        console.warn("Navigation error:", e);
+      } finally {
+        console.log("App is ready");}
     }
-  }, [user, segments]);
+
+    prepareApp();
+  }, [userToken, segments, loading, router]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

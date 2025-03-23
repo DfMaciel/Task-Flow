@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet,KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../authcontext";
 import { useState } from "react";
 import FilledButton from "../components/filledButtonComponent";
@@ -16,13 +15,7 @@ export default function TelaLogin() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
-
-  // const handleLogin = () => {
-  //   if (username.trim()) {
-  //     login(username); 
-  //     router.replace("/(tabs)/home");
-  //   }
-  // };
+  const [error, setError] = useState("");
   
   const validateEmail = (text: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,6 +27,24 @@ export default function TelaLogin() {
         setEmailError("");
     }
 };
+
+const handleLogin = async () => {
+    if (emailError || !email || !password) {
+      setError("Por favor, preencha todos os campos corretamente");
+      return;
+    }
+    
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        router.replace("/(tabs)/home");
+      } else {
+        setError(result.message || "Erro ao fazer login");
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao tentar fazer login");
+    }
+  };
 
 
   return (
@@ -72,6 +83,7 @@ export default function TelaLogin() {
                             />
                         }
                     />
+                    {error ? <Text style={styles.errorText}>{error}</Text> : null}
                     <Text style={{fontSize: 17, color: "white"}}> Esqueceu sua senha? </Text>
                     <FilledButton text="Entrar" color="#6247aa" onPress={() => router.replace("/(tabs)/home")} />
                     <Text style={{textAlign: "center", fontSize: 20, color: "white"}}> ou </Text>

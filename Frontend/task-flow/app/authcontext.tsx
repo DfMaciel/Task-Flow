@@ -1,57 +1,49 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { login as loginService, logout as logoutService } from "./services/api";
+import { getToken } from "./services/tokenStorage";
 
-type AuthContextType = {
-  user: string | null;
-  login: (username: string) => Promise<void>;
+interface AuthContextType {
+  userToken: string | null;
+  login: (email: string, senha: string) => Promise<any>;
   logout: () => Promise<void>;
-};
+  loading: boolean;
+}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+const AuthContext = createContext<AuthContextType | null>(null);
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useState<string | null>(null); 
+  const [userToken, setUserToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const checkLoginStatus = async () => {
-          try{
-            const storedUser = await AsyncStorage.getItem("user");
-            if (storedUser) {
-              setUser(storedUser); 
-            }
-          } catch (error) {
-            console.log("Failed to load user from storage", error);
-          }
-        };
-        checkLoginStatus();
-      }, []);
-  
-    const login = async (username: string) => {
-      try {
-        await AsyncStorage.setItem("user", username);
-        setUser(username);
-      } catch (error) {
-        console.error("Failed to save user", error);
-      }
+  useEffect(() => {
+    const loadToken = async () => {
+      const token = await getToken();
+      setUserToken(token);
+      setLoading(false);
     };
+    loadToken();
+  }, []);
 
-    const logout = async () => {
-      try {
-        await AsyncStorage.removeItem("user");
-        setUser(null);
-      } catch (error) {
-        console.error("Failed to remove user", error);
-      }
-    };
-  
-    return (
-      <AuthContext.Provider value={{ user, login, logout }}>
-        {children}
-      </AuthContext.Provider>
-    );
+  const login = async (email: string, senha: string) => {
+    const result = await loginService(email, senha);
+    if (result.success) {
+      setUserToken(await getToken());
+    }
+    return result;
   };
 
-  function useAuth () {
+  const logout = async () => {
+    await logoutService();
+    setUserToken(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ userToken, login, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+function useAuth (): AuthContextType {
     const context = useContext(AuthContext);
     if (!context) {
       throw new Error("useAuth deve ser usado dentro de um AuthProvider");
@@ -59,5 +51,5 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return context;
   };
 
-  export { AuthProvider, useAuth };
+  export { useAuth };
   export default AuthProvider;
