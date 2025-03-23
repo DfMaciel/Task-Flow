@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { login as loginService, logout as logoutService } from "./services/api";
-import { getToken } from "./services/tokenStorage";
+import { login as loginService, logout as logoutService } from "../services/api";
+import { getToken } from "../services/tokenStorage";
 
 interface AuthContextType {
   userToken: string | null;

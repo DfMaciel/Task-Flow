@@ -1,13 +1,13 @@
 import { View, Text, Button, StyleSheet, Platform, KeyboardAvoidingView, ScrollView} from "react-native";
 import { useRouter } from "expo-router";
-import GradientBackground from "../components/linearGradientContainer";
-import TitleTextComponent from "../components/titleTextComponent";
+import GradientBackground from "../../components/linearGradientContainer";
+import TitleTextComponent from "../../components/titleTextComponent";
 import { TextInput } from "react-native-paper";
 import { useState } from "react";
-import FilledButton from "../components/filledButtonComponent";
-import OutlinedButton from "../components/outlinedButtonComponent";
-import { UsuarioCadastroInterface } from "../types/UsuarioInterface";
-import usuarioCadastroService from "../services/usuario/usuarioCadastroService";
+import FilledButton from "../../components/filledButtonComponent";
+import OutlinedButton from "../../components/outlinedButtonComponent";
+import { UsuarioCadastroInterface } from "../../types/UsuarioInterface";
+import usuarioCadastroService from "../../services/usuario/usuarioCadastroService";
 
 export default function TelaCadastro() {
     const router = useRouter();
@@ -30,6 +30,11 @@ export default function TelaCadastro() {
     };
 
     const handleCadastro = async () => {
+        if (name === "" || email === "" || password === "") {
+            setError("Por favor, preencha todos os campos");
+            return;
+        }
+
         if (emailError) return;
 
         const usuarioCadastro: UsuarioCadastroInterface = {
@@ -40,14 +45,14 @@ export default function TelaCadastro() {
 
         const resposta = await usuarioCadastroService(usuarioCadastro);
 
+        console.log(resposta);
+
         if (!resposta.success) {
             setError(resposta.message);
         } else {
             router.replace("/login/login");
         }
     };
-
-
 
     return (
         <GradientBackground style={styles.mainDiv} lavaLamp={true}>
@@ -89,10 +94,11 @@ export default function TelaCadastro() {
                                 />
                             }
                         />
+                        <Text style={styles.errorText}>{error}</Text>
                         <Text style={{fontSize: 17, color: "white"}}> Esqueceu sua senha? </Text>
-                        <FilledButton text="Cadastrar" color="#6247aa" onPress={() => router.replace("/(tabs)/home")} />
+                        <FilledButton text="Cadastrar" color="#6247aa" onPress={() => handleCadastro()} />
                         <Text style={{textAlign: "center", fontSize: 20, color: "white"}}> ou </Text>
-                        <OutlinedButton text="Fazer login" textColor="white" onPress={() => handleCadastro()} />
+                        <OutlinedButton text="Fazer login" textColor="white" onPress={() => router.navigate('/login/login')} />
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
@@ -123,7 +129,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: "#FF6B6B",
-        fontSize: 12,
+        fontSize: 15,
         marginTop: -5,
         marginBottom: 5,
     },

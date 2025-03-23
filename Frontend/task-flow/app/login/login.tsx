@@ -2,10 +2,10 @@ import { View, Text, StyleSheet,KeyboardAvoidingView, Platform, ScrollView } fro
 import { useRouter } from "expo-router";
 import { useAuth } from "../authcontext";
 import { useState } from "react";
-import FilledButton from "../components/filledButtonComponent";
-import GradientBackground from "../components/linearGradientContainer";
-import OutlinedButton from "../components/outlinedButtonComponent";
-import TitleTextComponent from "../components/titleTextComponent";
+import FilledButton from "../../components/filledButtonComponent";
+import GradientBackground from "../../components/linearGradientContainer";
+import OutlinedButton from "../../components/outlinedButtonComponent";
+import TitleTextComponent from "../../components/titleTextComponent";
 import { TextInput } from "react-native-paper";
 
 export default function TelaLogin() {

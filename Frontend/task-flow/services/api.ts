@@ -1,12 +1,15 @@
 import axios from 'axios';
-// import { SERVER_ROUTE } from "@env";
+import Constants from 'expo-constants';
 import { clearTokens, getRefreshToken, getToken, setTokens } from './tokenStorage';
 
+const { SERVER_ROUTE } = Constants.expoConfig?.extra || {};
+
 const api = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: SERVER_ROUTE,
 });
 
 api.interceptors.request.use(async (config) => {
+  console.log(SERVER_ROUTE);
   const token = await getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

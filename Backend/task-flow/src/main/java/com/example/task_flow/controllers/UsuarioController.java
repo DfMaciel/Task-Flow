@@ -20,6 +20,7 @@ public class UsuarioController {
 
     @PostMapping()
     public ResponseEntity<?> cadastrarUsuario(@RequestBody CadastroUsuarioDto usuario) {
+        System.out.println("recebendo requisição");
         try {
             var usuarioId = usuarioService.cadastrarUsuario(usuario);
             return ResponseEntity.created(URI.create("/usuarios/" + usuarioId.toString())).body("Usuário cadastrado");

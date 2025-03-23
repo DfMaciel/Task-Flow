@@ -1,10 +1,10 @@
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { Button } from "react-native-paper";
-import TitleTextComponent from "../components/titleTextComponent";
-import GradientBackground from "../components/linearGradientContainer";
-import FilledButton from "../components/filledButtonComponent";
-import OutlinedButton from "../components/outlinedButtonComponent";
+import TitleTextComponent from "../../components/titleTextComponent";
+import GradientBackground from "../../components/linearGradientContainer";
+import FilledButton from "../../components/filledButtonComponent";
+import OutlinedButton from "../../components/outlinedButtonComponent";
 
 export default function IndexPage() {
     return (
