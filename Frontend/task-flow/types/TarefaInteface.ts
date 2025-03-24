@@ -18,6 +18,6 @@ export interface CriarTarefa {
     titulo: string;
     descricao: string;
     prioridade: string;
-    tempoEstimado?: string;
+    tempoEstimado?: number | null;
     dataEntrega?: string;
 }

@@ -1,14 +1,11 @@
 // app/home.tsx
 
 import { View, Text, Button, StyleSheet, FlatList } from "react-native";
-import { useAuth } from "../authcontext";
-import { router } from "expo-router";
 import AdicionarIcon from "@/components/adicionarIcon";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
 import { useEffect, useState } from "react";
 import ListarTarefas from "@/services/tarefas/listarTarefasService";
 import TaskItemComponent from "@/components/taskItemComponent";
-import TitleTextComponent from "@/components/titleTextComponent";
 
 const TelaHome = () => {
   const [tarefas, setTarefas] = useState<VisualizarTarefa[]>([]);

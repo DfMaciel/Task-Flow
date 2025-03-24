@@ -1,11 +1,14 @@
+import { useRouter } from "expo-router";
 import { StyleSheet } from "react-native";
 import { FAB } from "react-native-paper";
 
 export default function AdicionarIcon() {
+    const router = useRouter();
+
     return (
         <FAB 
         style={styles.fab} 
-        icon="plus" onPress={() => console.log("Adicionar")} 
+        icon="plus" onPress={() => router.push("/home/adicionarTarefa")} 
         />
     );
 }

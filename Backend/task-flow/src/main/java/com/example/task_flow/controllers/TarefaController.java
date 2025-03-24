@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,7 +60,8 @@ public class TarefaController {
             return ResponseEntity.badRequest().body("Usuário não encontrado");
         }
         try {
-            return tarefaService.cadastrarTarefa(usuarioOptional.get(), cadastroTarefaDto);
+            var tarefaId = tarefaService.cadastrarTarefa(usuarioOptional.get(), cadastroTarefaDto);
+            return ResponseEntity.created(URI.create("/tarefas/" + tarefaId.toString())).body("Tarefa cadastrado");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
