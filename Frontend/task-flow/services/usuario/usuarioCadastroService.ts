@@ -1,10 +1,14 @@
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { UsuarioCadastroInterface } from '../../types/UsuarioInterface';
-import api from '../api';
+import Constants from 'expo-constants';
+
+const { SERVER_ROUTE } = Constants.expoConfig?.extra || {};
 
 export default async function usuarioCadastroService(usuarioCadastro: UsuarioCadastroInterface) {
     try {
-        const resposta = await api.post('/usuarios', usuarioCadastro);
+        console.log(`Tentando conectar a: ${SERVER_ROUTE}/usuarios`);
+        const resposta = await axios.post(`${SERVER_ROUTE}/usuarios`, usuarioCadastro);
+        console.log(resposta);
 
         if (resposta.status == 201) {
             return { status: resposta.status, data: resposta.data };

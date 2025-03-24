@@ -78,7 +78,7 @@ export async function refreshAccessToken () {
 
 export async function login(email: string, senha: string) {
   try {
-      const response = await api.post("/autenticacao", {
+      const response = await axios.post(`${SERVER_ROUTE}/autenticacao`, {
           email,
           senha
       });
