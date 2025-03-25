@@ -1,16 +1,18 @@
 // app/home.tsx
 
-import { View, Text, Button, StyleSheet, FlatList } from "react-native";
+import { View, Text, Button, StyleSheet, FlatList, RefreshControl } from "react-native";
 import AdicionarIcon from "@/components/adicionarIcon";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
 import { useEffect, useState } from "react";
 import ListarTarefas from "@/services/tarefas/listarTarefasService";
 import TaskItemComponent from "@/components/taskItemComponent";
+import { router } from "expo-router";
 
 const TelaHome = () => {
   const [tarefas, setTarefas] = useState<VisualizarTarefa[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  
     async function carregarTarefas() {
       console.log("Buscando tarefas")
       try {
@@ -21,15 +23,22 @@ const TelaHome = () => {
       }
     }
 
+  useEffect(() => {
     carregarTarefas();
   }, []);
+  
+  const onRefresh = async () => {
+    setRefreshing(true); // Show the loading spinner
+    await carregarTarefas(); // Reload the tasks
+    setRefreshing(false); // Hide the loading spinner
+  };
   
   const renderItem = ({ item }: { item: VisualizarTarefa }) => {
     return (
       <TaskItemComponent
         tarefa={item}
         onPress={() => {
-          console.log("Tarefa selecionada", item);
+          router.push(`/home/tarefa/${item.id}`);
         }}
         />
     );
@@ -44,6 +53,9 @@ const TelaHome = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
       <AdicionarIcon/>
     </View>

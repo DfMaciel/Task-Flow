@@ -24,7 +24,7 @@ public class Tarefa {
     private String descricao;
 
     @Column
-    private String status = "Em andamento";
+    private String status = "naoiniciada";
 
     @Column
     private LocalDateTime dataCriacao;

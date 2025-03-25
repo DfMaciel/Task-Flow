@@ -38,7 +38,7 @@ public class TarefaService {
         return tarefa.get();
     }
 
-    public ResponseEntity<?> cadastrarTarefa(Usuario usuario, @RequestBody CadastroTarefaDto cadastroTarefaDto) {
+    public Long cadastrarTarefa(Usuario usuario, @RequestBody CadastroTarefaDto cadastroTarefaDto) {
         System.out.println("TarefaDto" + cadastroTarefaDto);
         Tarefa tarefa = new Tarefa();
         tarefa.setUsuario(usuario);
@@ -51,7 +51,7 @@ public class TarefaService {
         tarefa.setDataCriacao(dataAtual);
         System.out.println("Tarefa" + tarefa);
         Tarefa tarefaSalva = tarefaRepository.save(tarefa);
-        return ResponseEntity.ok(tarefaSalva);
+        return tarefaSalva.getId();
     }
 
     public void atualizarTarefa(Tarefa tarefa, AtualizarTarefaDto atualizarTarefaDto) {

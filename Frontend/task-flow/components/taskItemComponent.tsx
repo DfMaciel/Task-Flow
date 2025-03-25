@@ -6,7 +6,9 @@ export default function TaskItemComponent({ tarefa, onPress }: { tarefa: Visuali
         <TouchableOpacity onPress={onPress}>
             <View style={styles.container}>
                 <Text style={styles.titulo}>{tarefa.titulo}</Text>
-                <Text style={styles.descricao}>{tarefa.descricao}</Text>
+                <Text style={styles.descricao}>{tarefa.descricao.substring(0, 110)}
+                    {tarefa.descricao.length > 100 && "..."}
+                </Text>
             </View>
         </TouchableOpacity>
     );

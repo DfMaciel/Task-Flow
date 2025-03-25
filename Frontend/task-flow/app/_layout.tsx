@@ -2,6 +2,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import AuthProvider,{ useAuth } from "./authcontext";
 import { useEffect } from "react";
 import { authEmitter } from "@/services/authEmiter";
+import { PaperProvider } from "react-native-paper";
 
 function ProtectedLayout() {
   const { userToken, loading } = useAuth();
@@ -62,7 +63,9 @@ function ProtectedLayout() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <ProtectedLayout />
+      <PaperProvider>
+        <ProtectedLayout />
+      </PaperProvider>
     </AuthProvider>
   );
 }

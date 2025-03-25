@@ -3,3 +3,7 @@ export interface VisualizarNota {
     conteudo: string;
     dataCriacao: string;
 }
+
+export interface AdicionarNota {
+    conteudo: string;
+}
