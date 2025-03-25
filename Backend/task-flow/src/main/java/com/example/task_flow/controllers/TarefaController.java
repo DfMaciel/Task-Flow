@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -85,6 +86,33 @@ public class TarefaController {
         try {
             tarefaService.atualizarTarefa(tarefa, atualizarTarefaDto);
             return ResponseEntity.ok("Tarefa atualizada");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> atualizarStatusTarefa(Authentication authentication, @PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+        String email = (String) authentication.getPrincipal();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Optional<Tarefa> tarefaOptional = tarefaRepository.findById(id);
+        if (tarefaOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Tarefa não encontrada");
+        }
+        Tarefa tarefa = tarefaOptional.get();
+        if (!tarefa.getUsuario().equals(usuarioOptional.get())) {
+            return ResponseEntity.status(403).body("Usuário não tem permissão para atualizar a tarefa");
+        }
+        String status = requestBody.get("status");
+        if (status == null) {
+            return ResponseEntity.badRequest().body("Status não informado");
+        }
+        try {
+            tarefaService.atualizarStatusTarefa(tarefa, status);
+            return ResponseEntity.ok("Status da tarefa atualizado");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

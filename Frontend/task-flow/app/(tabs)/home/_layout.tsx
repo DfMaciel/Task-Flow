@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { Button } from "react-native";
+import { Icon, IconButton } from "react-native-paper";
 
 export default function LayoutHome() {
     return (
@@ -10,7 +10,13 @@ export default function LayoutHome() {
                 title: "Detalhes da tarefa", 
                 headerTitleAlign: "center", 
                 headerRight(props) {
-                    return <Button title="Editar" onPress={() => {}} />
+                    return(
+                    <IconButton
+                        icon="pencil"
+                        size={24}
+                        onPress={() => console.log("Edit Pressed")}
+                    />
+                    );
                 },}} 
             />
         </Stack>

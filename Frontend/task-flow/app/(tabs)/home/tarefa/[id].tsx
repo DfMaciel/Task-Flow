@@ -2,6 +2,7 @@ import AdicionarNotaComponent from "@/components/adicionarNotaComponent";
 import PrioridadeComponent from "@/components/prioridadeComponent";
 import StatusComponent from "@/components/statusComponent";
 import teste from "@/services/authService";
+import atualizarStatusTarefa from "@/services/tarefas/atualizarStatusTarefa";
 import buscarTarefa from "@/services/tarefas/buscarTarefa";
 import { VisualizarNota } from "@/types/NotasInterface";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
@@ -38,12 +39,35 @@ export default function VisualizarTarefaPage() {
     const toggleExpanded = () => {
         setExpanded(!expanded);
       };
+      
+    const formatPrazo = (prazo: string | undefined) => {
+    if (!prazo) return "Sem prazo definido"; 
+    try {
+        const [year, month, day] = prazo.split("-"); 
+        return `${day}/${month}/${year}`; 
+    } catch (error) {
+        console.error("Erro ao formatar o prazo:", error);
+        return prazo;
+    }
+    };
+    
+    async function trocarStatus(newStatus: string) {
+        try {
+            const resultado = await atualizarStatusTarefa(Number(id), newStatus);
+            if (resultado.status === 200) {
+                console.log("Status alterado com sucesso");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
     
     return (
         <View style={style.container}>
             <Text style={style.title}>{tarefa?.titulo}</Text>
+            <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} </Text>
             <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} /> }
-                {tarefa?.status && <StatusComponent status={tarefa?.status} /> }
+                {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={true} onStatusChange={trocarStatus} /> }
             </View>
             <Text style={style.descricaoTitle}>Descrição da tarefa</Text>
             <Text style={style.descricao}>
@@ -89,7 +113,7 @@ export default function VisualizarTarefaPage() {
                 </View>
                 </Modal>
         </View>
-    )
+    );
 }
 
 const style = StyleSheet.create({
@@ -105,6 +129,12 @@ const style = StyleSheet.create({
     infoContainer: {
         flexDirection: "row",
         marginBottom: 16
+    },
+    prazo: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 5,
+        color: "grey"
     },
     descricaoTitle: {
         fontSize: 22,

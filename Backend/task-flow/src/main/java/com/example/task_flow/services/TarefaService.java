@@ -82,6 +82,25 @@ public class TarefaService {
         tarefaRepository.save(tarefa);
     }
 
+    public void atualizarStatusTarefa(Tarefa tarefa, String status) {
+        tarefa.setStatus(status);
+        switch (status) {
+            case "naoiniciada":
+                tarefa.setDataInicio(null);
+                tarefa.setDataConclusao(null);
+                break;
+            case "emandamento":
+                tarefa.setDataInicio(LocalDateTime.now());
+                tarefa.setDataConclusao(null);
+                break;
+            case "concluida":
+                tarefa.setDataConclusao(LocalDateTime.now());
+                break;
+        }
+
+        tarefaRepository.save(tarefa);
+    }
+
     public void deletarTarefa(Long id) {
         tarefaRepository.deleteById(id);
     }
