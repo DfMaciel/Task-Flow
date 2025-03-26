@@ -52,26 +52,6 @@ export default function VisualizarTarefaPage() {
         }
     }
 
-    const renderItem = ({ item }: { item: VisualizarNota }) => {
-        return (
-            <View style={style.notaItem}>
-                <View style={style.notaHeader}>
-                    <Text style={style.notaData}>
-                        <Icon source="calendar-clock" size={14} color="#6750A4" />
-                        {" "}{formatDateTime(item.dataCriacao)}
-                    </Text>
-                    <TouchableOpacity 
-                        onPress={() => handleExcluirNota(item.id)}
-                        style={style.deleteButton}
-                    >
-                        <Icon source="delete-outline" size={20} color="#D32F2F" />
-                    </TouchableOpacity>
-                </View>
-                <Text style={style.notaConteudo}>{item.conteudo}</Text>
-            </View>
-        );
-    };
-    
     async function handleExcluirNota (id: number) {
         try {
             const resultado = await excluirNota({id});
@@ -84,7 +64,7 @@ export default function VisualizarTarefaPage() {
     }
     
     return (
-        <ScrollView style={style.scrollContainer} contentContainerStyle={style.scrollContent}>
+        <ScrollView style={style.scrollContainer} contentContainerStyle={style.scrollContent} nestedScrollEnabled={true}>
             <Text style={style.title}>{tarefa?.titulo}</Text>
             <View style={style.dataContainer}>
                 <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} - </Text>
@@ -118,15 +98,25 @@ export default function VisualizarTarefaPage() {
             </View>
             <Text style={style.descricaoTitle}>Notas</Text>
             <View style={style.notasContainer}>
-            
-                {tarefa?.notas && tarefa?.notas.length > 0 ? (
-                    <FlatList
-                        data={notas}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={renderItem}
-                    />    
-                )
-                : (
+            {notas.length > 0 ? (
+                notas.map((nota) => (
+                    <View key={nota.id} style={style.notaItem}>
+                        <View style={style.notaHeader}>
+                            <Text style={style.notaData}>
+                                <Icon source="calendar-clock" size={14} color="#6750A4" />
+                                {" "}{formatDateTime(nota.dataCriacao)}
+                            </Text>
+                            <TouchableOpacity 
+                                onPress={() => handleExcluirNota(nota.id)}
+                                style={style.deleteButton}
+                            >
+                                <Icon source="delete-outline" size={20} color="#D32F2F" />
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={style.notaConteudo}>{nota.conteudo}</Text>
+                    </View>
+                ))
+            ): (
                     <View style={style.emptyNotesContainer}>
                         <Icon source="note-outline" size={24} color="#9e9e9e" />
                         <Text style={style.emptyNotesText}>Nenhuma nota adicionada</Text>
