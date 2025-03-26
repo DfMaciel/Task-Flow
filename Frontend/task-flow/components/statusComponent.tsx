@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Button, Text, StyleSheet, FlatList, Modal, TouchableOpacity, TouchableOpacityProps} from "react-native";
 import type { ElementRef } from "react";
 export default function StatusComponent({ 
@@ -8,7 +8,7 @@ export default function StatusComponent({
 }: { 
     status: string, 
     isEditable: boolean, 
-    onStatusChange: (newStatus: string) => void
+    onStatusChange?: (newStatus: string) => void
 }) {
     const [currentStatus, setCurrentStatus] = useState(status);
     const [modalVisible, setModalVisible] = useState(false);
@@ -16,19 +16,19 @@ export default function StatusComponent({
     const badgeRef = useRef<ElementRef<typeof TouchableOpacity>>(null);
 
     const statusOptions = [
-        { label: "Não iniciada", value: "naoiniciada", cor: "lightblue" },
-        { label: "Em andamento", value: "emandamento", cor: "purple" },
-        { label: "Concluída", value: "concluida", cor: "green" },
+        { label: "Não iniciada", value: "naoiniciada", cor: "#91e5e5" },
+        { label: "Em andamento", value: "emandamento", cor: "#0032ff" },
+        { label: "Concluída", value: "concluida", cor: "#76d970" },
     ];
     
     const getStatusDetails = (status: string) => {
         switch (status) {
           case "naoiniciada":
-            return { cor: "lightblue", text: "Não inciada" };
+            return { cor: "#91e5e5", text: "Não inciada" };
           case "emandamento":
-            return { cor: "purple", text: "Em andamento" };
+            return { cor: "#0032ff", text: "Em andamento" };
           case "concluida":
-            return { cor: "green", text: "Concluída" };
+            return { cor: "#76d970", text: "Concluída" };
           default:
             return { cor: "gray", text: "Desconhecido" }; 
         }
@@ -37,9 +37,20 @@ export default function StatusComponent({
       const { cor, text } = getStatusDetails(currentStatus);
     
       const handleStatusChange = (newStatus: string) => {
-        setCurrentStatus(newStatus);
-        onStatusChange(newStatus);
+        if (newStatus !== currentStatus) {
+          setCurrentStatus(newStatus);
+          setModalVisible(false);
+          if (onStatusChange) {
+            onStatusChange(newStatus);
+          }
+        } else {
+          setModalVisible(false);
+        }
       };
+
+      useEffect(() => {
+        setCurrentStatus(status);
+    }, [status]);
       
       const handleBadgePress = () => {
         if (badgeRef.current) {
@@ -61,10 +72,13 @@ export default function StatusComponent({
             <>
             <TouchableOpacity 
               ref={badgeRef}
-              style={[styles.badge, { backgroundColor: cor, width: 110 }]}
+              style={[styles.badge, { backgroundColor: cor, width: 120 }]}
               onPress={handleBadgePress}
             >
+            <View style={styles.badgeContent}>
               <Text style={styles.badgeText}>{text}</Text>
+              <Text style={styles.arrowIndicator}>▼</Text>
+            </View>
             </TouchableOpacity>
             
             <Modal
@@ -85,7 +99,7 @@ export default function StatusComponent({
                       position: 'absolute',
                       top: badgePosition.y,
                       left: badgePosition.x,
-                      width: Math.max(badgePosition.width, 110) 
+                      width: Math.max(badgePosition.width, 120) 
                     }
                   ]}
                 >
@@ -107,7 +121,7 @@ export default function StatusComponent({
           </>
           ) : (
             <View style={[styles.badge, { backgroundColor: cor }]}>
-              <Text style={styles.badgeText}>{text}</Text>
+              <Text style={[styles.badgeText, {marginLeft: 0}]}>{text}</Text>
             </View>
           )}
         </View>
@@ -119,14 +133,25 @@ const styles = StyleSheet.create({
       paddingVertical: 4,
       paddingHorizontal: 8,
       borderRadius: 5,
-      marginRight: 8,
-      width: 80,
+      width: 110,
       alignItems: "center",
       justifyContent: "center",
+    },
+    badgeContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 4,
+    },
+    arrowIndicator: {
+      color: 'white',
+      fontSize: 12,
+      marginLeft: 4,
     },
     badgeText: {
       color: "white",
       fontWeight: "bold",
+      marginLeft: 4,
       fontSize: 16,
     },
     modalOverlay: {

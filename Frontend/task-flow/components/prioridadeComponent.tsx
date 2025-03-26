@@ -5,7 +5,7 @@ export default function PrioridadeComponent({ prioridade }: { prioridade: string
     let texto = "";
     switch (prioridade) {
         case "1":
-            cor = "#e5b400";
+            cor = "#ffcd00";
             texto = "Baixa";
             break;
         case "2":

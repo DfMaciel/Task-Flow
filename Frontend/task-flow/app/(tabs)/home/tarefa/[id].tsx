@@ -1,16 +1,15 @@
 import AdicionarNotaComponent from "@/components/adicionarNotaComponent";
 import PrioridadeComponent from "@/components/prioridadeComponent";
 import StatusComponent from "@/components/statusComponent";
-import teste from "@/services/authService";
 import atualizarStatusTarefa from "@/services/tarefas/atualizarStatusTarefa";
 import buscarTarefa from "@/services/tarefas/buscarTarefa";
 import { VisualizarNota } from "@/types/NotasInterface";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
-import { useNavigation, useRouter } from "expo-router";
+import formatPrazo from "@/utils/dateTimeParser";
 import { useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect } from "react";
 import { View, Button, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
-import { useTheme } from "react-native-paper";
+import { Icon } from "react-native-paper";
 
 export default function VisualizarTarefaPage() {
     const searchParams= useSearchParams();
@@ -39,17 +38,6 @@ export default function VisualizarTarefaPage() {
     const toggleExpanded = () => {
         setExpanded(!expanded);
       };
-      
-    const formatPrazo = (prazo: string | undefined) => {
-    if (!prazo) return "Sem prazo definido"; 
-    try {
-        const [year, month, day] = prazo.split("-"); 
-        return `${day}/${month}/${year}`; 
-    } catch (error) {
-        console.error("Erro ao formatar o prazo:", error);
-        return prazo;
-    }
-    };
     
     async function trocarStatus(newStatus: string) {
         try {
@@ -65,7 +53,11 @@ export default function VisualizarTarefaPage() {
     return (
         <View style={style.container}>
             <Text style={style.title}>{tarefa?.titulo}</Text>
-            <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} </Text>
+            <View style={style.dataContainer}>
+                <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} - </Text>
+                <Icon source="timer-outline" size={20} color="grey"/>
+                <Text style={{fontWeight: "bold", color: "grey", fontSize: 16}}>{tarefa?.tempoEstimado} horas</Text>
+            </View>
             <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} /> }
                 {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={true} onStatusChange={trocarStatus} /> }
             </View>
@@ -93,6 +85,9 @@ export default function VisualizarTarefaPage() {
                         <Text>{nota.dataCriacao}</Text>
                     </View>
                 )) : <Text style={{fontSize: 15}}>Nenhuma nota adicionada</Text>}
+            </View>
+            <View style={style.notasHeader}>
+                <Text style={style.descricaoTitle}>Check-In</Text>
             </View>
             <Modal
                 visible={modalVisible}
@@ -130,10 +125,15 @@ const style = StyleSheet.create({
         flexDirection: "row",
         marginBottom: 16
     },
+    dataContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 5,
+    },
     prazo: {
         fontSize: 18,
         fontWeight: "bold",
-        marginBottom: 5,
+        marginRight: 1,
         color: "grey"
     },
     descricaoTitle: {
