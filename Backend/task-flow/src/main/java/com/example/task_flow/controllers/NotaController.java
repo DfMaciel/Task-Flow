@@ -1,5 +1,6 @@
 package com.example.task_flow.controllers;
 
+import com.example.task_flow.controllers.Dto.CadastroNotaDto;
 import com.example.task_flow.entities.Nota;
 import com.example.task_flow.entities.Tarefa;
 import com.example.task_flow.entities.Usuario;
@@ -50,7 +51,7 @@ public class NotaController {
     }
 
     @PostMapping("/{idTarefa}")
-    public ResponseEntity<?> cadastrarNota(Authentication authentication, @PathVariable Long idTarefa, String conteudo) {
+    public ResponseEntity<?> cadastrarNota(Authentication authentication, @PathVariable Long idTarefa, @RequestBody CadastroNotaDto notaDto) {
         String email = (String) authentication.getPrincipal();
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
 
@@ -69,6 +70,8 @@ public class NotaController {
         if (!tarefa.getUsuario().equals(usuarioOptional.get())) {
             return ResponseEntity.status(HttpStatusCode.valueOf(403)).body("Usuário não tem permissão para adicionar nota a essa tarefa");
         }
+
+        String conteudo = notaDto.conteudo();
 
         try {
             Long idNota = notaService.cadastrarNota(tarefa, conteudo);

@@ -1,6 +1,7 @@
 import AdicionarNotaComponent from "@/components/adicionarNotaComponent";
 import PrioridadeComponent from "@/components/prioridadeComponent";
 import StatusComponent from "@/components/statusComponent";
+import excluirNota from "@/services/notas/excluirNota";
 import atualizarStatusTarefa from "@/services/tarefas/atualizarStatusTarefa";
 import buscarTarefa from "@/services/tarefas/buscarTarefa";
 import { VisualizarNota } from "@/types/NotasInterface";
@@ -9,7 +10,7 @@ import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
 import { useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect } from "react";
-import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from "react-native";
+import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList } from "react-native";
 import { Icon } from "react-native-paper";
 
 export default function VisualizarTarefaPage() {
@@ -50,6 +51,37 @@ export default function VisualizarTarefaPage() {
             console.error(error);
         }
     }
+
+    const renderItem = ({ item }: { item: VisualizarNota }) => {
+        return (
+            <View style={style.notaItem}>
+                <View style={style.notaHeader}>
+                    <Text style={style.notaData}>
+                        <Icon source="calendar-clock" size={14} color="#6750A4" />
+                        {" "}{formatDateTime(item.dataCriacao)}
+                    </Text>
+                    <TouchableOpacity 
+                        onPress={() => handleExcluirNota(item.id)}
+                        style={style.deleteButton}
+                    >
+                        <Icon source="delete-outline" size={20} color="#D32F2F" />
+                    </TouchableOpacity>
+                </View>
+                <Text style={style.notaConteudo}>{item.conteudo}</Text>
+            </View>
+        );
+    };
+    
+    async function handleExcluirNota (id: number) {
+        try {
+            const resultado = await excluirNota({id});
+            if (resultado.status === 200) {
+                console.log("Nota excluída com sucesso");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
     
     return (
         <ScrollView style={style.scrollContainer} contentContainerStyle={style.scrollContent}>
@@ -74,21 +106,34 @@ export default function VisualizarTarefaPage() {
             </Text>
             <Text style={[style.descricaoTitle, { marginTop: 10}]}>Anexos</Text>
             <View>
-                <Button title="Adicionar anexo" onPress={() => {}} />
-            </View>
-            <View style={style.notasHeader}>
-                <Text style={[style.descricaoTitle, { marginTop: 10}]}>Notas adicionais</Text>
-                <Text style={style.adicionarTitle} onPress={() => setModalVisible(true)}>Adicionar notas</Text>
-            </View>
-            <View>
-                {notas.length > 0 ? notas.map((nota) => (
-                    <View key={nota.id}>
-                        <Text>{nota.conteudo}</Text>
-                        <Text>{nota.dataCriacao}</Text>
+                <TouchableOpacity 
+                    style={style.addAnexoButton}
+                    onPress={() => {}}
+                    >
+                    <View style={style.addAnexoContent}>
+                        <Icon source="plus-circle-outline" size={20} color="#6750A4" />
+                        <Text style={style.adicionarTitle}>Adicionar novo anexo</Text>
                     </View>
-                )) : <Text style={{fontSize: 15}}>Nenhuma nota adicionada</Text>}
+                </TouchableOpacity>
             </View>
-            <View style={style.notasHeader}>
+            <Text style={style.descricaoTitle}>Notas</Text>
+            <View style={style.notasContainer}>
+            
+                {tarefa?.notas && tarefa?.notas.length > 0 ? (
+                    <FlatList
+                        data={notas}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderItem}
+                    />    
+                )
+                : (
+                    <View style={style.emptyNotesContainer}>
+                        <Icon source="note-outline" size={24} color="#9e9e9e" />
+                        <Text style={style.emptyNotesText}>Nenhuma nota adicionada</Text>
+                    </View>
+                )}
+            </View>
+            <View style={style.notasContainer}>
                 <Text style={style.descricaoTitle}>Check-In</Text>
             </View>
             <Modal
@@ -158,17 +203,75 @@ const style = StyleSheet.create({
         color: "purple",
         fontWeight: "bold",
     },
-    notasHeader: {
-        marginTop: 10,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center"
+    notasContainer: {
+        marginTop: 8,
+        marginBottom: 16,
+    },
+    addAnexoButton: {
+        backgroundColor: '#f0e7fd', 
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 16,
+        borderStyle: 'dashed',
+        borderWidth: 1,
+        borderColor: '#6750A4',
+    },
+    addAnexoContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     adicionarTitle: {
         fontSize: 15,
-        marginTop: 6,
+        marginLeft: 8,
         fontWeight: "bold",
         color: "purple"
+    },
+    notaItem: {
+        backgroundColor: '#f8f4ff',
+        padding: 16,
+        borderRadius: 8,
+        marginVertical: 8,
+        borderLeftWidth: 4,
+        borderLeftColor: '#6750A4',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 1.5,
+    },
+    notaHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+        paddingBottom: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+    },
+    notaData: {
+        fontSize: 12,
+        color: '#757575',
+    },
+    notaConteudo: {
+        fontSize: 16,
+        lineHeight: 22,
+    },
+    deleteButton: {
+        padding: 4,
+    },
+    emptyNotesContainer: {
+        padding: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+        marginVertical: 8,
+    },
+    emptyNotesText: {
+        fontSize: 15,
+        color: '#9e9e9e',
+        marginTop: 8
     },
     modalContainer: {
         flex: 1,
