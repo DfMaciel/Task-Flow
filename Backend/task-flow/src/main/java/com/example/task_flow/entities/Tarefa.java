@@ -44,7 +44,7 @@ public class Tarefa {
     @Column
     private String tempoEstimado;
 
-    @OneToMany(mappedBy = "tarefa")
+    @OneToMany(mappedBy = "tarefa", cascade = CascadeType.ALL)
     private List<Nota> notas;
 
 //    @OneToMany(mappedBy = "tarefa")

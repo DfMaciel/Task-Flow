@@ -3,6 +3,8 @@ package com.example.task_flow.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "notas")
 public class Nota {
@@ -16,7 +18,7 @@ public class Nota {
     private String conteudo;
 
     @Column
-    private String dataCriacao;
+    private LocalDateTime dataCriacao;
 
     @JsonIgnore
     @ManyToOne
@@ -34,7 +36,7 @@ public class Nota {
         return this.conteudo;
     }
 
-    public String getDataCriacao() {
+    public LocalDateTime getDataCriacao() {
         return this.dataCriacao;
     }
 
@@ -50,10 +52,11 @@ public class Nota {
         this.conteudo = conteudo;
     }
 
-    public void setDataCriacao(String dataCriacao) {
+    public void setDataCriacao(LocalDateTime dataCriacao) {
         this.dataCriacao = dataCriacao;
     }
 
+    @JsonIgnore
     public void setTarefa(Tarefa tarefa) {
         this.tarefa = tarefa;
     }

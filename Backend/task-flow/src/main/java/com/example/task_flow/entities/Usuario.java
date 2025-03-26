@@ -24,7 +24,7 @@ public class Usuario {
     @Column
     private String senha;
 
-    @OneToMany(mappedBy = "usuario")
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("usuario")
     private List<Tarefa> tarefas = new ArrayList<>();
 

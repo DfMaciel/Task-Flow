@@ -5,10 +5,11 @@ import atualizarStatusTarefa from "@/services/tarefas/atualizarStatusTarefa";
 import buscarTarefa from "@/services/tarefas/buscarTarefa";
 import { VisualizarNota } from "@/types/NotasInterface";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
+import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
 import { useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect } from "react";
-import { View, Button, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
+import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from "react-native";
 import { Icon } from "react-native-paper";
 
 export default function VisualizarTarefaPage() {
@@ -51,13 +52,14 @@ export default function VisualizarTarefaPage() {
     }
     
     return (
-        <View style={style.container}>
+        <ScrollView style={style.scrollContainer} contentContainerStyle={style.scrollContent}>
             <Text style={style.title}>{tarefa?.titulo}</Text>
             <View style={style.dataContainer}>
                 <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} - </Text>
                 <Icon source="timer-outline" size={20} color="grey"/>
                 <Text style={{fontWeight: "bold", color: "grey", fontSize: 16}}>{tarefa?.tempoEstimado} horas</Text>
             </View>
+            <Text style={[style.prazo, {marginBottom: 5}]}>Criada em: {formatDateTime(tarefa?.dataCriacao)}</Text>
             <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} /> }
                 {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={true} onStatusChange={trocarStatus} /> }
             </View>
@@ -107,11 +109,18 @@ export default function VisualizarTarefaPage() {
                     </View>
                 </View>
                 </Modal>
-        </View>
+        </ScrollView>
     );
 }
 
 const style = StyleSheet.create({
+    scrollContainer: {
+        flex: 1,
+    },
+    scrollContent: {
+        padding: 16,
+        paddingBottom: 40, 
+    },
     container: {
         flex: 1,
         padding: 16
@@ -123,7 +132,7 @@ const style = StyleSheet.create({
     },
     infoContainer: {
         flexDirection: "row",
-        marginBottom: 16
+        marginBottom: 10
     },
     dataContainer: {
         flexDirection: "row",

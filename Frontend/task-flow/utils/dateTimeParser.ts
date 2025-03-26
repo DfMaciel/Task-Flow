@@ -1,5 +1,5 @@
-export default function formatPrazo (prazo: string | undefined) {
-    if (!prazo) return "Sem prazo definido"; 
+export default function formatPrazo (prazo: string | undefined): string {
+    if (prazo == undefined) return "Sem prazo definido"; 
     try {
         const [year, month, day] = prazo.split("-"); 
         return `${day}/${month}/${year}`; 
