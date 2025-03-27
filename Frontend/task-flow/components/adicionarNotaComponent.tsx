@@ -1,18 +1,21 @@
 import api from "@/services/api";
 import { router } from "expo-router";
-import { useState } from "react";
+import React, { SetStateAction, useState } from "react";
 import { View, StyleSheet, Text, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { Button, IconButton, Surface, TextInput } from "react-native-paper";
 import { useTheme } from "react-native-paper";
 import DialogErrorComponent from "./dialogErrorComponent";
 import adicionarNota from "@/services/notas/adicionarNota";
 
-export default function AdicionarNotaComponent({id}: {id: number}) {
+export default function AdicionarNotaComponent({id, setModalVisible}: {id: number, setModalVisible: React.Dispatch<React.SetStateAction<boolean>>}) {
     const [conteudo, setConteudo] = useState("");
     const [error, setError] = useState("");
     const [errorDialogVisible, setErrorDialogVisible] = useState(false);
     const [conteudoError, setConteudoError] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const tema = useTheme();
+
+    const maxLength = 1000;
 
     async function handleAdicionarNota() {
         let hasError = false;  
@@ -25,6 +28,8 @@ export default function AdicionarNotaComponent({id}: {id: number}) {
         
         if (hasError) return;
 
+        setSubmitting(true);
+
         try {
             const nota = {
                 conteudo,
@@ -33,16 +38,18 @@ export default function AdicionarNotaComponent({id}: {id: number}) {
             const resposta = await adicionarNota(nota, id);
             if ( resposta.status === 201 ) {
                 alert("Nota adicionada com sucesso")
-                router.push(`/home/tarefa/${id}`);
+                setModalVisible(false)
             }
         } catch (error:any) {
             setError(error.message);
             setErrorDialogVisible(true);
+        } finally {
+            setSubmitting(false);
         }
     }
 
     return (
-        <View style={styles.container}>
+        <Surface style={styles.surface}>
             <DialogErrorComponent 
                 visible={errorDialogVisible} 
                 error={error} 
@@ -58,51 +65,109 @@ export default function AdicionarNotaComponent({id}: {id: number}) {
                     keyboardShouldPersistTaps="handled"
                     nestedScrollEnabled={true}
                 >
-                    <Text style={styles.title}>Adicionar Nota</Text>
+                    <View style={styles.headerContainer}>
+                        <IconButton
+                            icon="notebook-plus-outline"
+                            size={28}
+                            iconColor={tema.colors.primary}
+                        />
+                        <Text style={[styles.title, {color: tema.colors.primary}]}>Nova Nota</Text>
+                    </View>
+                    
                     <TextInput
-                        label="Conteúdo"
+                        label="O que você quer registrar?"
+                        placeholder="Digite o conteúdo da sua nota aqui..."
                         value={conteudo}
-                        onChangeText={setConteudo}
+                        onChangeText={text => {
+                            if (text.length <= maxLength) {
+                                setConteudo(text);
+                            }
+                        }}
                         multiline
+                        numberOfLines={10}
                         error={conteudoError}
                         style={styles.input}
+                        mode="outlined"
+                        outlineColor="#e0e0e0"
+                        activeOutlineColor={tema.colors.primary}
                     />
-                    {conteudoError && <Text style={{ color: tema.colors.error, marginBottom: 10 }}>Insira um conteúdo valido.</Text>}
+                    
+                    <View style={styles.inputFooter}>
+                        {conteudoError && 
+                            <Text style={{ color: tema.colors.error }}>
+                                Por favor, digite algum conteúdo.
+                            </Text>
+                        }
+                        <Text style={styles.characterCount}>
+                            {conteudo.length}/{maxLength}
+                        </Text>
+                    </View>
+                    
                     <Button
                         mode="contained"
                         style={styles.button}
+                        labelStyle={styles.buttonLabel}
                         onPress={handleAdicionarNota}
+                        loading={submitting}
+                        disabled={submitting}
+                        buttonColor={tema.colors.primary}
+                        icon="check-circle"
                     >
-                        Adicionar
+                        {submitting ? "Salvando..." : "Salvar Nota"}
                     </Button>
                 </ScrollView>
             </KeyboardAvoidingView>
-        </View>
+    </Surface>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    surface: {
         flex: 1,
-        // justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
+        padding: 24,
         width: "100%",
+        borderRadius: 16,
+        elevation: 4,
     },
     scrollContainer: {
         flexGrow: 1,
     },
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
     title: {
-        fontSize: 20,
-        marginBottom: 20,
+        fontSize: 22,
+        fontWeight: '600',
     },
     input: {
         width: "100%",
-        height: 150,
-        marginBottom: 10,
-        backgroundColor: 'rgba(219, 216, 219, 0.25)',
+        minHeight: 150,
+        marginBottom: 8,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        fontSize: 16,
+    },
+    inputFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    characterCount: {
+        color: '#888',
+        fontSize: 12,
+        textAlign: 'right',
     },
     button: {
         width: "100%",
+        paddingVertical: 6,
+        borderRadius: 8,
+        marginTop: 16,
+    },
+    buttonLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        paddingVertical: 2,
     },
 });

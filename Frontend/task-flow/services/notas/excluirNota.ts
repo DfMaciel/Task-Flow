@@ -3,6 +3,7 @@ import api from "../api";
 
 export default async function excluirNota({id}: {id:number}) {
     try {
+        console.log(id);
         const resposta = await api.delete(`/notas/${id}`);
         
         if (resposta.status === 200) {

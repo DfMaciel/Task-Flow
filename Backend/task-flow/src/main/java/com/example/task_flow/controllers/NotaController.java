@@ -92,9 +92,9 @@ public class NotaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletarNota(Long idNota) {
+    public ResponseEntity<?> deletarNota(@PathVariable Long id) {
         try {
-            notaService.deletarNota(idNota);
+            notaService.deletarNota(id);
             return ResponseEntity.ok("Nota deletada");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(e.getMessage());

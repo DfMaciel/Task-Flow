@@ -2,6 +2,7 @@ import AdicionarNotaComponent from "@/components/adicionarNotaComponent";
 import PrioridadeComponent from "@/components/prioridadeComponent";
 import StatusComponent from "@/components/statusComponent";
 import excluirNota from "@/services/notas/excluirNota";
+import atualizarPrioridadeTarefa from "@/services/tarefas/atualizarPrioridadeTarefa";
 import atualizarStatusTarefa from "@/services/tarefas/atualizarStatusTarefa";
 import buscarTarefa from "@/services/tarefas/buscarTarefa";
 import { VisualizarNota } from "@/types/NotasInterface";
@@ -9,8 +10,8 @@ import { VisualizarTarefa } from "@/types/TarefaInteface";
 import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
 import { useSearchParams } from "expo-router/build/hooks";
-import React, { useState, useEffect } from "react";
-import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl } from "react-native";
 import { Icon } from "react-native-paper";
 
 export default function VisualizarTarefaPage() {
@@ -21,21 +22,31 @@ export default function VisualizarTarefaPage() {
     const [expanded, setExpanded] = useState(false);
     const [notas, setNotas] = useState<VisualizarNota[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        async function carregarTarefa() {
-            try {
-                const resposta = await buscarTarefa(Number(id));
-                setTarefa(resposta.data);
-                if (resposta.data.notas) {
-                    setNotas(resposta.data.notas);
-                }
-            } catch (error) {
-                console.error(error);
+    const carregarTarefa = async () => {
+        try {
+            const resposta = await buscarTarefa(Number(id));
+            setTarefa(resposta.data);
+            if (resposta.data.notas) {
+                setNotas(resposta.data.notas);
             }
+        } catch (error) {
+            console.error(error);
         }
+    };
+
+    // Initial load
+    useEffect(() => {
         carregarTarefa();
     }, []);
+    
+    // Pull to refresh handler
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await carregarTarefa();
+        setRefreshing(false);
+    }, [id]);
     
     const toggleExpanded = () => {
         setExpanded(!expanded);
@@ -46,6 +57,17 @@ export default function VisualizarTarefaPage() {
             const resultado = await atualizarStatusTarefa(Number(id), newStatus);
             if (resultado.status === 200) {
                 console.log("Status alterado com sucesso");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    
+    async function trocarPrioridade(newPrioridade: string) {
+        try {
+            const resultado = await atualizarPrioridadeTarefa(Number(id), newPrioridade);
+            if (resultado.status === 200) {
+                console.log("Prioridade alterada com sucesso");
             }
         } catch (error) {
             console.error(error);
@@ -64,7 +86,19 @@ export default function VisualizarTarefaPage() {
     }
     
     return (
-        <ScrollView style={style.scrollContainer} contentContainerStyle={style.scrollContent} nestedScrollEnabled={true}>
+        <ScrollView 
+            style={style.scrollContainer} 
+            contentContainerStyle={style.scrollContent} 
+            nestedScrollEnabled={true}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing} 
+                    onRefresh={onRefresh} 
+                    colors={["#6750A4"]} 
+                    tintColor="#6750A4"
+                />
+            }
+        >
             <Text style={style.title}>{tarefa?.titulo}</Text>
             <View style={style.dataContainer}>
                 <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} - </Text>
@@ -72,7 +106,9 @@ export default function VisualizarTarefaPage() {
                 <Text style={{fontWeight: "bold", color: "grey", fontSize: 16}}>{tarefa?.tempoEstimado} horas</Text>
             </View>
             <Text style={[style.prazo, {marginBottom: 5}]}>Criada em: {formatDateTime(tarefa?.dataCriacao)}</Text>
-            <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} /> }
+            <Text style={[style.prazo, {marginBottom: 5}]}>Iniciada em: {tarefa?.dataInicio? formatDateTime(tarefa?.dataInicio) : "Não foi iniciada"}</Text>
+            <Text style={[style.prazo, {marginBottom: 5}]}>Concluída em: {tarefa?.dataConclusao? formatDateTime(tarefa?.dataConclusao) : "Não foi concluída"}</Text>
+            <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} isEditable={true} onPrioridadeChange={trocarPrioridade} /> }
                 {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={true} onStatusChange={trocarStatus} /> }
             </View>
             <Text style={style.descricaoTitle}>Descrição da tarefa</Text>
@@ -96,7 +132,12 @@ export default function VisualizarTarefaPage() {
                     </View>
                 </TouchableOpacity>
             </View>
-            <Text style={style.descricaoTitle}>Notas</Text>
+            <View style={style.adicionarNotaTitle}>
+                <Text style={style.descricaoTitle}>Notas</Text>
+                <Text onPress={() => setModalVisible(true)} style={style.lerMais}>
+                    Adicionar nova nota
+                </Text>
+            </View>
             <View style={style.notasContainer}>
             {notas.length > 0 ? (
                 notas.map((nota) => (
@@ -123,9 +164,6 @@ export default function VisualizarTarefaPage() {
                     </View>
                 )}
             </View>
-            <View style={style.notasContainer}>
-                <Text style={style.descricaoTitle}>Check-In</Text>
-            </View>
             <Modal
                 visible={modalVisible}
                 animationType="slide"
@@ -134,7 +172,7 @@ export default function VisualizarTarefaPage() {
                 >
                 <View style={style.modalContainer}>
                     <View style={style.modalContent}>
-                    <AdicionarNotaComponent id={Number(id)} />
+                    <AdicionarNotaComponent id={Number(id)} setModalVisible={setModalVisible} />
                     <TouchableOpacity
                         style={style.closeButton}
                         onPress={() => setModalVisible(false)}
@@ -197,6 +235,13 @@ const style = StyleSheet.create({
         marginTop: 8,
         marginBottom: 16,
     },
+    adicionarNotaTitle: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+        paddingBottom: 8,
+    },
     addAnexoButton: {
         backgroundColor: '#f0e7fd', 
         padding: 12,
@@ -254,7 +299,6 @@ const style = StyleSheet.create({
         padding: 20,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
         borderRadius: 8,
         marginVertical: 8,
     },
@@ -269,22 +313,22 @@ const style = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "rgba(0, 0, 0, 0.5)",
       },
-      modalContent: {
+    modalContent: {
         width: "90%",
-        height: "50%",
+        height: "60%",
         backgroundColor: "white",
         borderRadius: 10,
         padding: 20,
         alignItems: "center",
       },
-      closeButton: {
+    closeButton: {
         marginTop: 20,
         backgroundColor: "purple",
         padding: 10,
         borderRadius: 5,
       },
-      closeButtonText: {
+    closeButtonText: {
         color: "white",
         fontWeight: "bold",
-      },
+    },
 });

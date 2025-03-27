@@ -118,6 +118,33 @@ public class TarefaController {
         }
     }
 
+    @PatchMapping("/{id}/prioridade")
+    public ResponseEntity<?> atualizarStatusPrioridade(Authentication authentication, @PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+        String email = (String) authentication.getPrincipal();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Optional<Tarefa> tarefaOptional = tarefaRepository.findById(id);
+        if (tarefaOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Tarefa não encontrada");
+        }
+        Tarefa tarefa = tarefaOptional.get();
+        if (!tarefa.getUsuario().equals(usuarioOptional.get())) {
+            return ResponseEntity.status(403).body("Usuário não tem permissão para atualizar a tarefa");
+        }
+        String prioridade = requestBody.get("prioridade");
+        if (prioridade == null) {
+            return ResponseEntity.badRequest().body("Prioridade não informada");
+        }
+        try {
+            tarefaService.atualizarPrioridadeTarefa(tarefa, prioridade);
+            return ResponseEntity.ok("Status da tarefa atualizado");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarTarefa(Authentication authentication, @PathVariable Long id) {
         String email = (String) authentication.getPrincipal();

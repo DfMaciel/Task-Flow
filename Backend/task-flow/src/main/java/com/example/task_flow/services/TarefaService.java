@@ -101,6 +101,11 @@ public class TarefaService {
         tarefaRepository.save(tarefa);
     }
 
+    public void atualizarPrioridadeTarefa(Tarefa tarefa, String prioridade) {
+        tarefa.setPrioridade(prioridade);
+        tarefaRepository.save(tarefa);
+    }
+
     public void deletarTarefa(Long id) {
         tarefaRepository.deleteById(id);
     }
