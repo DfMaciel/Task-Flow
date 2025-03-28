@@ -13,9 +13,9 @@ import formatPrazo from "@/utils/dateTimeParser";
 import { useNavigation } from "expo-router";
 import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl } from "react-native";
+import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform } from "react-native";
 import { Icon, IconButton, TextInput } from "react-native-paper";
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 
 export default function VisualizarTarefaPage() {
@@ -67,20 +67,40 @@ export default function VisualizarTarefaPage() {
         }
     }, [tarefa]);
 
-    const onPrazoChange = (event: any, selectedDate?: Date) => {
-        setShowPrazoPicker(false);
-        if (selectedDate) setPrazo(selectedDate);
+    const onPrazoChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        const currentDate = selectedDate || prazo;
+        setShowPrazoPicker(Platform.OS === 'ios');
+        setPrazo(currentDate);
+        
       };
       
-      const onDataInicioChange = (event: any, selectedDate?: Date) => {
-        setShowInicioPicker(false);
-        if (selectedDate) setDataInicio(selectedDate);
-      };
+    //   const onDataInicioChange = (event: any, selectedDate?: Date) => {
+    //     const currentDate = selectedDate || dataInicio || new Date();
+  
+    //     if (Platform.OS === 'android') {
+    //         if (event.type === 'set') {
+    //         setDataInicio(currentDate);
+    //         }
+    //         setShowInicioPicker(false);
+    //     } else {
+    //         setDataInicio(currentDate);
+    //         setShowInicioPicker(false);
+    //     }
+    //   };
       
-      const onDataConclusaoChange = (event: any, selectedDate?: Date) => {
-        setShowConclusaoPicker(false);
-        if (selectedDate) setDataConclusao(selectedDate);
-      };
+    //   const onDataConclusaoChange = (event: any, selectedDate?: Date) => {
+    //     const currentDate = selectedDate || dataConclusao || new Date();
+  
+    //     if (Platform.OS === 'android') {
+    //         if (event.type === 'set') {
+    //         setDataConclusao(currentDate);
+    //         }
+    //         setShowConclusaoPicker(false);
+    //     } else {
+    //         setDataConclusao(currentDate);
+    //         setShowConclusaoPicker(false);
+    //     }
+    //   };
 
     useEffect(() => {
         if (!isEditing) {
@@ -335,19 +355,19 @@ export default function VisualizarTarefaPage() {
                 {showPrazoPicker && (
                     <DateTimePicker
                         value={prazo || new Date()}
-                        mode="datetime"
-                        // is24Hour={true}
+                        mode="date"
                         display="default"
+                        // is24Hour={true}
                         onChange={onPrazoChange}
                     />
                 )}
 
-                {showInicioPicker && (
+                {/* {showInicioPicker && (
                     <DateTimePicker
                         value={dataInicio || new Date()}
                         mode="datetime"
                         // is24Hour={true}
-                        display="default"
+                        display={Platform.OS === 'android' ? "spinner" : "default"}
                         onChange={onDataInicioChange}
                     />
                 )}
@@ -357,10 +377,10 @@ export default function VisualizarTarefaPage() {
                         value={dataConclusao || new Date()}
                         mode="datetime"
                         // is24Hour={true}
-                        display="default"
+                        display={Platform.OS === 'android' ? "spinner" : "default"}
                         onChange={onDataConclusaoChange}
                     />
-                )}
+                )} */}
             </ScrollView>
             <EditarIcon 
                     isEditing={isEditing} 
