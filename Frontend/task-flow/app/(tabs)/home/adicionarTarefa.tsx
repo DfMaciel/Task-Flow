@@ -97,21 +97,39 @@ export default function AdicionarTarefaPage() {
             <TextInput
                 label="Titulo da tarefa"
                 value={titulo}
-                onChangeText={setTitulo}
+                onChangeText={text => {
+                    if (text.length <= 120) {
+                        setTitulo(text);
+                    }
+                }}
                 style={[styles.input]}
                 error={tituloError}
             />
-            {tituloError && <Text style={{ color: 'red' }}>Insira um título.</Text>}
+            <View style={styles.inputFooter}>
+                {tituloError && <Text style={{ color: 'red' }}>Insira um título.</Text>}
+                <Text style={styles.characterCount}>
+                    {titulo.length}/120
+                </Text>
+            </View>
             <TextInput
                 label="Descrição"
                 value={descricao}
-                onChangeText={setDescricao}
+                onChangeText={text => {
+                    if (text.length <= 2000) {
+                        setDescricao(text);
+                    }
+                }}
                 multiline
                 numberOfLines={10}
                 style={[styles.input]}
                 error={descricaoError}
             />
-            {descricaoError && <Text style={{ color: 'red' }}>Insira uma descrição.</Text>}
+            <View style={styles.inputFooter}>
+                {descricaoError && <Text style={{ color: 'red' }}>Insira uma descrição.</Text>}
+                <Text style={styles.characterCount}>
+                    {descricao.length}/2000
+                </Text>
+            </View>
             {/* <Text style={[styles.label, prioridadeError && { color: 'red'}]}>Prioridade</Text> */}
             <DropDownPicker
                 open={openPrioridade}
@@ -208,7 +226,17 @@ const styles = StyleSheet.create({
         borderColor: 'rgb(186, 26, 26)',
         borderWidth: 2,
         borderBottomWidth: 2,
-      },
+    },
+    inputFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    characterCount: {
+        color: '#888',
+        fontSize: 12,
+        textAlign: 'right',
+    },
     dropdown: {
         marginVertical: 8,
         backgroundColor: 'white',

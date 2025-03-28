@@ -17,10 +17,10 @@ public class Tarefa {
     @Column(name = "tarefa_id")
     private Long id;
 
-    @Column
+    @Column(length = 120)
     private String titulo;
 
-    @Column
+    @Column(length = 2000)
     private String descricao;
 
     @Column

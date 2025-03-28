@@ -1,19 +1,8 @@
 import { Stack, useRouter } from "expo-router";
-import { useState } from "react";
 import { Icon, IconButton, useTheme } from "react-native-paper";
 
 export default function LayoutHome() {
     const theme = useTheme();
-    const router = useRouter();
-    const [isEditing, setIsEditing] = useState(false);
-
-    const toggleEditMode = () => {
-        const newEditingState = !isEditing;
-        setIsEditing(newEditingState);
-        
-        console.log("Setting params:", newEditingState);
-        router.setParams({ isEditing: newEditingState ? "true" : "false" });
-    };
 
     return (
         <Stack 
@@ -46,14 +35,6 @@ export default function LayoutHome() {
                 options={{
                     title: "Detalhes da tarefa", 
                     headerTitleAlign: "center", 
-                    headerRight: () => (
-                        <IconButton
-                            icon="pencil"
-                            iconColor="#FFF"
-                            size={24}
-                            onPress={toggleEditMode}
-                        />
-                    ),
                 }}
             />
         </Stack>

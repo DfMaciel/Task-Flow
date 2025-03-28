@@ -1,4 +1,5 @@
 import AdicionarNotaComponent from "@/components/adicionarNotaComponent";
+import EditarIcon from "@/components/editaricon";
 import PrioridadeComponent from "@/components/prioridadeComponent";
 import StatusComponent from "@/components/statusComponent";
 import excluirNota from "@/services/notas/excluirNota";
@@ -13,7 +14,9 @@ import { useNavigation } from "expo-router";
 import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl } from "react-native";
-import { Icon, TextInput } from "react-native-paper";
+import { Icon, IconButton, TextInput } from "react-native-paper";
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 
 export default function VisualizarTarefaPage() {
     const searchParams= useSearchParams();
@@ -24,13 +27,18 @@ export default function VisualizarTarefaPage() {
     const [notas, setNotas] = useState<VisualizarNota[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const params = useLocalSearchParams();
-    const isEditing = params.isEditing === 'true'
-    const navigation = useNavigation();
+    const [isEditing, setIsEditing] = useState(false);
 
-    const [titulo, setTitulo] = useState(tarefa?.titulo);
-    const [descricao, setDescricao] = useState(tarefa?.descricao);
+    const [titulo, setTitulo] = useState("");
+    const [descricao, setDescricao] = useState("");    
+    const [prazo, setPrazo] = useState<Date | null>(null);
+    const [tempoEstimado, setTempoEstimado] = useState("");
+    const [dataInicio , setDataInicio] = useState<Date | null>(null);
+    const [dataConclusao , setDataConclusao] = useState<Date | null>(null);
     
+    const [showPrazoPicker, setShowPrazoPicker] = useState(false);
+    const [showInicioPicker, setShowInicioPicker] = useState(false);
+    const [showConclusaoPicker, setShowConclusaoPicker] = useState(false);
 
     const carregarTarefa = async () => {
         try {
@@ -43,6 +51,48 @@ export default function VisualizarTarefaPage() {
             console.error(error);
         }
     };
+
+    const handleToggleEdit = () => {
+        setIsEditing(!isEditing);
+    }
+    
+    useEffect(() => {
+        if (tarefa) {
+            setTitulo(tarefa.titulo || "");
+            setDescricao(tarefa.descricao || "");
+            setTempoEstimado(tarefa.tempoEstimado || "");
+            setPrazo(tarefa.prazo ? new Date(tarefa.prazo) : null);
+            setDataInicio(tarefa.dataInicio ? new Date(tarefa.dataInicio) : null);
+            setDataConclusao(tarefa.dataConclusao ? new Date(tarefa.dataConclusao) : null);
+        }
+    }, [tarefa]);
+
+    const onPrazoChange = (event: any, selectedDate?: Date) => {
+        setShowPrazoPicker(false);
+        if (selectedDate) setPrazo(selectedDate);
+      };
+      
+      const onDataInicioChange = (event: any, selectedDate?: Date) => {
+        setShowInicioPicker(false);
+        if (selectedDate) setDataInicio(selectedDate);
+      };
+      
+      const onDataConclusaoChange = (event: any, selectedDate?: Date) => {
+        setShowConclusaoPicker(false);
+        if (selectedDate) setDataConclusao(selectedDate);
+      };
+
+    useEffect(() => {
+        if (!isEditing) {
+            setTitulo(tarefa?.titulo || "");
+            setDescricao(tarefa?.descricao || "");
+            setTempoEstimado(tarefa?.tempoEstimado || "");
+            setPrazo(tarefa?.prazo ? new Date(tarefa.prazo) : null);
+            setDataInicio(tarefa?.dataInicio ? new Date(tarefa.dataInicio) : null);
+            setDataConclusao(tarefa?.dataConclusao ? new Date(tarefa.dataConclusao) : null);
+        }
+    }
+    , [isEditing]);
 
     useEffect(() => {
         carregarTarefa();
@@ -93,114 +143,231 @@ export default function VisualizarTarefaPage() {
             console.error(error);
         }
     }
+
+    async function handleAtualizarTarefa () {
+        console.log("Em progresso")
+    }
     
     return (
-        <ScrollView 
-            style={style.scrollContainer} 
-            contentContainerStyle={style.scrollContent} 
-            nestedScrollEnabled={true}
-            refreshControl={
-                <RefreshControl
-                    refreshing={refreshing} 
-                    onRefresh={onRefresh} 
-                    colors={["#6750A4"]} 
-                    tintColor="#6750A4"
-                />
-            }
-        >
-            {isEditing ? (
-                <TextInput
-                    label="Titulo da tarefa"
-                    value={titulo}
-                    onChangeText={setTitulo}
-                    style={[style.input]}
-                />
-            ) : (
-                <Text style={style.title}>{tarefa?.titulo}</Text>
-            )}
-            <View style={style.dataContainer}>
-                <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} - </Text>
-                <Icon source="timer-outline" size={20} color="grey"/>
-                <Text style={{fontWeight: "bold", color: "grey", fontSize: 16}}>{tarefa?.tempoEstimado} horas</Text>
-            </View>
-            <Text style={[style.prazo, {marginBottom: 5}]}>Criada em: {formatDateTime(tarefa?.dataCriacao)}</Text>
-            <Text style={[style.prazo, {marginBottom: 5}]}>Iniciada em: {tarefa?.dataInicio? formatDateTime(tarefa?.dataInicio) : "Não foi iniciada"}</Text>
-            <Text style={[style.prazo, {marginBottom: 5}]}>Concluída em: {tarefa?.dataConclusao? formatDateTime(tarefa?.dataConclusao) : "Não foi concluída"}</Text>
-            <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} isEditable={true} onPrioridadeChange={trocarPrioridade} /> }
-                {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={true} onStatusChange={trocarStatus} /> }
-            </View>
-            <Text style={style.descricaoTitle}>Descrição da tarefa</Text>
-            <Text style={style.descricao}>
-                {expanded ? tarefa?.descricao : tarefa?.descricao.substring(0, 150)}
-                {tarefa?.descricao && tarefa?.descricao.length > 150 && (
-                    <Text onPress={toggleExpanded} style={style.lerMais}>
-                        {expanded ? " Ler menos" : "... Ler mais"}
-                    </Text>
+        <View style={{ flex: 1}}>
+            <ScrollView 
+                style={style.scrollContainer} 
+                contentContainerStyle={style.scrollContent} 
+                nestedScrollEnabled={true}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing} 
+                        onRefresh={onRefresh} 
+                        colors={["#6750A4"]} 
+                        tintColor="#6750A4"
+                    />
+                }
+            >
+
+                {isEditing ? (
+                    <TextInput
+                        label="Titulo da tarefa"
+                        value={titulo}
+                        onChangeText={text => {
+                            if (text.length <= 120) {
+                                setTitulo(text);
+                            }
+                        }}
+                        style={[style.input]}
+                    />
+                ) : (
+                    <Text style={style.title}>{tarefa?.titulo}</Text>
                 )}
-            </Text>
-            <Text style={[style.descricaoTitle, { marginTop: 10}]}>Anexos</Text>
-            <View>
-                <TouchableOpacity 
-                    style={style.addAnexoButton}
-                    onPress={() => {}}
-                    >
-                    <View style={style.addAnexoContent}>
-                        <Icon source="plus-circle-outline" size={20} color="#6750A4" />
-                        <Text style={style.adicionarTitle}>Adicionar novo anexo</Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={style.adicionarNotaTitle}>
-                <Text style={style.descricaoTitle}>Notas</Text>
-                <Text onPress={() => setModalVisible(true)} style={style.lerMais}>
-                    Adicionar nova nota
-                </Text>
-            </View>
-            <View style={style.notasContainer}>
-            {notas.length > 0 ? (
-                notas.map((nota) => (
-                    <View key={nota.id} style={style.notaItem}>
-                        <View style={style.notaHeader}>
-                            <Text style={style.notaData}>
-                                <Icon source="calendar-clock" size={14} color="#6750A4" />
-                                {" "}{formatDateTime(nota.dataCriacao)}
-                            </Text>
+                {isEditing ? ( 
+                    <View style={style.editableFieldsContainer}>
+                        {/* Prazo Field */}
+                        <View style={style.editableField}>
+                        <Text style={style.fieldLabel}>Prazo:</Text>
                             <TouchableOpacity 
-                                onPress={() => handleExcluirNota(nota.id)}
-                                style={style.deleteButton}
+                            style={style.datePickerButton} 
+                            onPress={() => setShowPrazoPicker(true)}
                             >
-                                <Icon source="delete-outline" size={20} color="#D32F2F" />
+                            <Text style={style.datePickerText}>
+                                {prazo ? formatDateTime(prazo.toISOString()) : "Selecionar prazo"}
+                            </Text>
+                            <Icon source="calendar" size={20} color="#6750A4" />
                             </TouchableOpacity>
                         </View>
-                        <Text style={style.notaConteudo}>{nota.conteudo}</Text>
+                        <View style={style.editableField}>
+                        <Text style={style.fieldLabel}>Tempo estimado:</Text>
+                            <TextInput
+                            value={tempoEstimado}
+                            onChangeText={setTempoEstimado}
+                            keyboardType="numeric"
+                            style={style.timeInput}
+                            placeholder="Horas"
+                            right={<TextInput.Affix text="horas" />}
+                            />
+                        </View>
+                        <View style={style.editableField}>
+                            <Text style={style.fieldLabel}>Iniciada em:</Text>
+                            <TouchableOpacity 
+                                style={style.datePickerButton} 
+                                onPress={() => setShowInicioPicker(true)}
+                            >
+                                <Text style={style.datePickerText}>
+                                {dataInicio ? formatDateTime(dataInicio.toISOString()) : "Não iniciada"}
+                                </Text>
+                                <Icon source="calendar" size={20} color="#6750A4" />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={style.editableField}>
+                        <Text style={style.fieldLabel}>Concluída em:</Text>
+                        <TouchableOpacity 
+                            style={style.datePickerButton} 
+                            onPress={() => setShowConclusaoPicker(true)}
+                        >
+                            <Text style={style.datePickerText}>
+                            {dataConclusao ? formatDateTime(dataConclusao.toISOString()) : "Não concluída"}
+                            </Text>
+                            <Icon source="calendar" size={20} color="#6750A4" />
+                        </TouchableOpacity>
+                        </View>
                     </View>
-                ))
-            ): (
-                    <View style={style.emptyNotesContainer}>
-                        <Icon source="note-outline" size={24} color="#9e9e9e" />
-                        <Text style={style.emptyNotesText}>Nenhuma nota adicionada</Text>
-                    </View>
+                ): 
+                (
+                    <>
+                        <View style={style.dataContainer}>
+                            <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} - </Text>
+                            <Icon source="timer-outline" size={20} color="grey"/>
+                            <Text style={{fontWeight: "bold", color: "grey", fontSize: 16}}>{tarefa?.tempoEstimado} horas</Text>
+                        </View>
+                        <Text style={[style.prazo, {marginBottom: 5}]}>Criada em: {formatDateTime(tarefa?.dataCriacao)}</Text>
+                        <Text style={[style.prazo, {marginBottom: 5}]}>Iniciada em: {tarefa?.dataInicio? formatDateTime(tarefa?.dataInicio) : "Não foi iniciada"}</Text>
+                        <Text style={[style.prazo, {marginBottom: 5}]}>Concluída em: {tarefa?.dataConclusao? formatDateTime(tarefa?.dataConclusao) : "Não foi concluída"}</Text>
+                    </>
                 )}
-            </View>
-            <Modal
-                visible={modalVisible}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={() => setModalVisible(false)}
-                >
-                <View style={style.modalContainer}>
-                    <View style={style.modalContent}>
-                    <AdicionarNotaComponent id={Number(id)} setModalVisible={setModalVisible} onSuccess={carregarTarefa}/>
-                    <TouchableOpacity
-                        style={style.closeButton}
-                        onPress={() => setModalVisible(false)}
-                    >
-                        <Text style={style.closeButtonText}>Fechar</Text>
-                    </TouchableOpacity>
-                    </View>
+                <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} isEditable={true} onPrioridadeChange={trocarPrioridade} /> }
+                    {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={true} onStatusChange={trocarStatus} /> }
                 </View>
+                <Text style={style.descricaoTitle}>Descrição da tarefa</Text>
+                {isEditing ? (
+                    <TextInput
+                        label="Descrição"
+                        value={descricao}
+                        onChangeText={text => {
+                            if (text.length <= 2000) {
+                                setDescricao(text);
+                            }
+                        }}
+                        multiline
+                        numberOfLines={10}
+                        style={[style.input]}
+                    />
+                ): (
+                    <Text style={style.descricao}>
+                        {expanded ? tarefa?.descricao : tarefa?.descricao.substring(0, 150)}
+                        {tarefa?.descricao && tarefa?.descricao.length > 150 && (
+                            <Text onPress={toggleExpanded} style={style.lerMais}>
+                                {expanded ? " Ler menos" : "... Ler mais"}
+                            </Text>
+                        )}
+                    </Text>
+                )}
+                
+                <Text style={[style.descricaoTitle, { marginTop: 10}]}>Anexos</Text>
+                <View>
+                    <TouchableOpacity 
+                        style={style.addAnexoButton}
+                        onPress={() => {}}
+                        >
+                        <View style={style.addAnexoContent}>
+                            <Icon source="plus-circle-outline" size={20} color="#6750A4" />
+                            <Text style={style.adicionarTitle}>Adicionar novo anexo</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={style.adicionarNotaTitle}>
+                    <Text style={style.descricaoTitle}>Notas</Text>
+                    <Text onPress={() => setModalVisible(true)} style={style.lerMais}>
+                        Adicionar nova nota
+                    </Text>
+                </View>
+                <View style={style.notasContainer}>
+                {notas.length > 0 ? (
+                    notas.map((nota) => (
+                        <View key={nota.id} style={style.notaItem}>
+                            <View style={style.notaHeader}>
+                                <Text style={style.notaData}>
+                                    <Icon source="calendar-clock" size={14} color="#6750A4" />
+                                    {" "}{formatDateTime(nota.dataCriacao)}
+                                </Text>
+                                <TouchableOpacity 
+                                    onPress={() => handleExcluirNota(nota.id)}
+                                    style={style.deleteButton}
+                                >
+                                    <Icon source="delete-outline" size={20} color="#D32F2F" />
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={style.notaConteudo}>{nota.conteudo}</Text>
+                        </View>
+                    ))
+                ): (
+                        <View style={style.emptyNotesContainer}>
+                            <Icon source="note-outline" size={24} color="#9e9e9e" />
+                            <Text style={style.emptyNotesText}>Nenhuma nota adicionada</Text>
+                        </View>
+                    )}
+                </View>
+                <Modal
+                    visible={modalVisible}
+                    animationType="slide"
+                    transparent={true}
+                    onRequestClose={() => setModalVisible(false)}
+                    >
+                    <View style={style.modalContainer}>
+                        <View style={style.modalContent}>
+                        <AdicionarNotaComponent id={Number(id)} setModalVisible={setModalVisible} onSuccess={carregarTarefa}/>
+                        <TouchableOpacity
+                            style={style.closeButton}
+                            onPress={() => setModalVisible(false)}
+                        >
+                            <Text style={style.closeButtonText}>Fechar</Text>
+                        </TouchableOpacity>
+                        </View>
+                    </View>
                 </Modal>
-        </ScrollView>
+                {showPrazoPicker && (
+                    <DateTimePicker
+                        value={prazo || new Date()}
+                        mode="datetime"
+                        // is24Hour={true}
+                        display="default"
+                        onChange={onPrazoChange}
+                    />
+                )}
+
+                {showInicioPicker && (
+                    <DateTimePicker
+                        value={dataInicio || new Date()}
+                        mode="datetime"
+                        // is24Hour={true}
+                        display="default"
+                        onChange={onDataInicioChange}
+                    />
+                )}
+
+                {showConclusaoPicker && (
+                    <DateTimePicker
+                        value={dataConclusao || new Date()}
+                        mode="datetime"
+                        // is24Hour={true}
+                        display="default"
+                        onChange={onDataConclusaoChange}
+                    />
+                )}
+            </ScrollView>
+            <EditarIcon 
+                    isEditing={isEditing} 
+                    onToggleEdit={handleToggleEdit} 
+                    onSave={handleAtualizarTarefa}
+                />
+        </View>
     );
 }
 
@@ -228,6 +395,48 @@ const style = StyleSheet.create({
     infoContainer: {
         flexDirection: "row",
         marginBottom: 10
+    },
+    editableFieldsContainer: {
+        marginVertical: 16,
+    },
+    editableField: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    fieldLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: 'grey',
+        width: 120,
+    },
+    fieldValue: {
+        fontSize: 16,
+        flex: 1,
+    },
+    datePickerButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        padding: 12,
+        flex: 1,
+        backgroundColor: 'white',
+    },
+    datePickerText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    timeInput: {
+        flex: 1,
+        backgroundColor: 'white',
+        height: 50,
+    },
+    descricaoInput: {
+        textAlignVertical: 'top',
+        minHeight: 120,
     },
     dataContainer: {
         flexDirection: "row",
