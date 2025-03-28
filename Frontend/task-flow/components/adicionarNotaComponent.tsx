@@ -7,7 +7,13 @@ import { useTheme } from "react-native-paper";
 import DialogErrorComponent from "./dialogErrorComponent";
 import adicionarNota from "@/services/notas/adicionarNota";
 
-export default function AdicionarNotaComponent({id, setModalVisible}: {id: number, setModalVisible: React.Dispatch<React.SetStateAction<boolean>>}) {
+export default function AdicionarNotaComponent({
+    id, 
+    setModalVisible, 
+    onSuccess
+}: {
+    id: number, 
+    setModalVisible: React.Dispatch<React.SetStateAction<boolean>>, onSuccess: () => void}) {
     const [conteudo, setConteudo] = useState("");
     const [error, setError] = useState("");
     const [errorDialogVisible, setErrorDialogVisible] = useState(false);
@@ -38,6 +44,7 @@ export default function AdicionarNotaComponent({id, setModalVisible}: {id: numbe
             const resposta = await adicionarNota(nota, id);
             if ( resposta.status === 201 ) {
                 alert("Nota adicionada com sucesso")
+                onSuccess();
                 setModalVisible(false)
             }
         } catch (error:any) {

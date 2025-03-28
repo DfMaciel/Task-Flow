@@ -9,10 +9,11 @@ import { VisualizarNota } from "@/types/NotasInterface";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
 import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
-import { useSearchParams } from "expo-router/build/hooks";
+import { useNavigation } from "expo-router";
+import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl } from "react-native";
-import { Icon } from "react-native-paper";
+import { Icon, TextInput } from "react-native-paper";
 
 export default function VisualizarTarefaPage() {
     const searchParams= useSearchParams();
@@ -23,6 +24,13 @@ export default function VisualizarTarefaPage() {
     const [notas, setNotas] = useState<VisualizarNota[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const params = useLocalSearchParams();
+    const isEditing = params.isEditing === 'true'
+    const navigation = useNavigation();
+
+    const [titulo, setTitulo] = useState(tarefa?.titulo);
+    const [descricao, setDescricao] = useState(tarefa?.descricao);
+    
 
     const carregarTarefa = async () => {
         try {
@@ -36,12 +44,10 @@ export default function VisualizarTarefaPage() {
         }
     };
 
-    // Initial load
     useEffect(() => {
         carregarTarefa();
     }, []);
     
-    // Pull to refresh handler
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await carregarTarefa();
@@ -57,6 +63,7 @@ export default function VisualizarTarefaPage() {
             const resultado = await atualizarStatusTarefa(Number(id), newStatus);
             if (resultado.status === 200) {
                 console.log("Status alterado com sucesso");
+                await carregarTarefa();
             }
         } catch (error) {
             console.error(error);
@@ -68,6 +75,7 @@ export default function VisualizarTarefaPage() {
             const resultado = await atualizarPrioridadeTarefa(Number(id), newPrioridade);
             if (resultado.status === 200) {
                 console.log("Prioridade alterada com sucesso");
+                await carregarTarefa();
             }
         } catch (error) {
             console.error(error);
@@ -79,6 +87,7 @@ export default function VisualizarTarefaPage() {
             const resultado = await excluirNota({id});
             if (resultado.status === 200) {
                 console.log("Nota excluída com sucesso");
+                await carregarTarefa();
             }
         } catch (error) {
             console.error(error);
@@ -99,7 +108,16 @@ export default function VisualizarTarefaPage() {
                 />
             }
         >
-            <Text style={style.title}>{tarefa?.titulo}</Text>
+            {isEditing ? (
+                <TextInput
+                    label="Titulo da tarefa"
+                    value={titulo}
+                    onChangeText={setTitulo}
+                    style={[style.input]}
+                />
+            ) : (
+                <Text style={style.title}>{tarefa?.titulo}</Text>
+            )}
             <View style={style.dataContainer}>
                 <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} - </Text>
                 <Icon source="timer-outline" size={20} color="grey"/>
@@ -172,7 +190,7 @@ export default function VisualizarTarefaPage() {
                 >
                 <View style={style.modalContainer}>
                     <View style={style.modalContent}>
-                    <AdicionarNotaComponent id={Number(id)} setModalVisible={setModalVisible} />
+                    <AdicionarNotaComponent id={Number(id)} setModalVisible={setModalVisible} onSuccess={carregarTarefa}/>
                     <TouchableOpacity
                         style={style.closeButton}
                         onPress={() => setModalVisible(false)}
@@ -202,6 +220,10 @@ const style = StyleSheet.create({
         fontSize: 32,
         fontWeight: "bold",
         marginBottom: 5
+    },
+    input: {
+        marginVertical: 8,
+        backgroundColor: 'white',
     },
     infoContainer: {
         flexDirection: "row",

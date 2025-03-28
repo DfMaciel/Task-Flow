@@ -94,6 +94,9 @@ public class TarefaService {
                 tarefa.setDataConclusao(null);
                 break;
             case "concluida":
+                if (tarefa.getDataInicio() == null) {
+                    tarefa.setDataInicio(LocalDateTime.now());
+                }
                 tarefa.setDataConclusao(LocalDateTime.now());
                 break;
         }
