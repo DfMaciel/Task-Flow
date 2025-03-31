@@ -41,6 +41,7 @@ export default function AdicionarNotaComponent({
                 conteudo,
             };
 
+            console.log("id", id)
             const resposta = await adicionarNota(nota, id);
             if ( resposta.status === 201 ) {
                 alert("Nota adicionada com sucesso")

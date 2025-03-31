@@ -51,7 +51,7 @@ public class NotaController {
     }
 
     @PostMapping("/{idTarefa}")
-    public ResponseEntity<?> cadastrarNota(Authentication authentication, @PathVariable Long idTarefa, @RequestBody CadastroNotaDto notaDto) {
+    public ResponseEntity<?> cadastrarNota(Authentication authentication, @PathVariable("idTarefa") Long idTarefa, @RequestBody CadastroNotaDto notaDto) {
         String email = (String) authentication.getPrincipal();
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
 

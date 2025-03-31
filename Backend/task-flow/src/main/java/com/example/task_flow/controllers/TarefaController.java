@@ -44,7 +44,7 @@ public class TarefaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarTarefa(@PathVariable Long id) {
+    public ResponseEntity<?> buscarTarefa(@PathVariable("id") Long id) {
         try {
             Tarefa tarefa = tarefaService.buscarTarefa(id);
             return ResponseEntity.ok(tarefa);
