@@ -21,3 +21,12 @@ export interface CriarTarefa {
     tempoEstimado?: number | null;
     dataEntrega?: string;
 }
+
+export interface AtualizarTarefa {
+    titulo: string | undefined;
+    descricao: string | undefined;
+    tempoEstimado: string | undefined;
+    prazo: string | undefined;
+    dataInicio?: string | undefined;
+    dataConclusao?: string | undefined;
+}    

@@ -7,8 +7,6 @@ import com.example.task_flow.entities.Usuario;
 import com.example.task_flow.repository.TarefaRepository;
 import com.example.task_flow.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -60,12 +58,6 @@ public class TarefaService {
         }
         if (atualizarTarefaDto.descricao().isPresent()) {
             tarefa.setDescricao(atualizarTarefaDto.descricao().get());
-        }
-        if (atualizarTarefaDto.status().isPresent()) {
-            tarefa.setStatus(atualizarTarefaDto.status().get());
-        }
-        if (atualizarTarefaDto.prioridade().isPresent()) {
-            tarefa.setPrioridade(atualizarTarefaDto.prioridade().get());
         }
         if (atualizarTarefaDto.tempoEstimado().isPresent()) {
             tarefa.setTempoEstimado(atualizarTarefaDto.tempoEstimado().get());

@@ -11,11 +11,13 @@ import { VisualizarTarefa } from "@/types/TarefaInteface";
 import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
 import { useNavigation } from "expo-router";
-import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
+import { useLocalSearchParams, useRouter, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform } from "react-native";
 import { Icon, IconButton, TextInput } from "react-native-paper";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import atualizarTarefa from "@/services/tarefas/atualizarTarefa";
+import excluirTarefa from "@/services/tarefas/deletarTarefa";
 
 
 export default function VisualizarTarefaPage() {
@@ -39,6 +41,8 @@ export default function VisualizarTarefaPage() {
     const [showPrazoPicker, setShowPrazoPicker] = useState(false);
     const [showInicioPicker, setShowInicioPicker] = useState(false);
     const [showConclusaoPicker, setShowConclusaoPicker] = useState(false);
+
+    const router = useRouter()
 
     const carregarTarefa = async () => {
         try {
@@ -74,33 +78,17 @@ export default function VisualizarTarefaPage() {
         
       };
       
-    //   const onDataInicioChange = (event: any, selectedDate?: Date) => {
-    //     const currentDate = selectedDate || dataInicio || new Date();
-  
-    //     if (Platform.OS === 'android') {
-    //         if (event.type === 'set') {
-    //         setDataInicio(currentDate);
-    //         }
-    //         setShowInicioPicker(false);
-    //     } else {
-    //         setDataInicio(currentDate);
-    //         setShowInicioPicker(false);
-    //     }
-    //   };
+      const onDataInicioChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        const currentDate = selectedDate || dataInicio;
+        setShowInicioPicker(Platform.OS === 'ios');
+        setDataInicio(currentDate);
+      };
       
-    //   const onDataConclusaoChange = (event: any, selectedDate?: Date) => {
-    //     const currentDate = selectedDate || dataConclusao || new Date();
-  
-    //     if (Platform.OS === 'android') {
-    //         if (event.type === 'set') {
-    //         setDataConclusao(currentDate);
-    //         }
-    //         setShowConclusaoPicker(false);
-    //     } else {
-    //         setDataConclusao(currentDate);
-    //         setShowConclusaoPicker(false);
-    //     }
-    //   };
+      const onDataConclusaoChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        const currentDate = selectedDate || dataConclusao;
+        setShowConclusaoPicker(Platform.OS === 'ios');
+        setDataConclusao(currentDate);
+      };
 
     useEffect(() => {
         if (!isEditing) {
@@ -165,7 +153,54 @@ export default function VisualizarTarefaPage() {
     }
 
     async function handleAtualizarTarefa () {
-        console.log("Em progresso")
+        try {
+            const changedFields: Record<string, any> = {};
+    
+            // Check each field against the original task data
+            if (titulo !== tarefa?.titulo) {
+                changedFields['titulo'] = titulo;
+            }
+            
+            if (descricao !== tarefa?.descricao) {
+                changedFields['descricao'] = descricao;
+            }
+            
+            if (tempoEstimado !== tarefa?.tempoEstimado) {
+                changedFields['tempoEstimado'] = tempoEstimado;
+            }
+            
+            const formattedPrazo = prazo ? prazo.toISOString().split('T')[0] : "";
+            if (formattedPrazo !== tarefa?.prazo) {
+                changedFields['prazo'] = formattedPrazo;
+            }
+            
+            const formattedDataInicio = dataInicio ? dataInicio.toISOString().split('T')[0] : "";
+            if (formattedDataInicio !== tarefa?.dataInicio) {
+                changedFields['dataInicio'] = formattedDataInicio;
+            }
+            
+            const formattedDataConclusao = dataConclusao ? dataConclusao.toISOString().split('T')[0] : "";
+            if (formattedDataConclusao !== tarefa?.dataConclusao) {
+                changedFields['dataConclusao'] = formattedDataConclusao;
+            }
+            
+            const resposta = await atualizarTarefa(Number(id), changedFields);
+            if (resposta.status === 200) {
+                alert("Tarefa atualizada com sucesso!");
+                setIsEditing(false);
+                await carregarTarefa();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function handleExcluirTarefa() {
+        const resposta = await excluirTarefa(Number(id))
+        if (resposta.status === 200) {
+            alert("Tarefa excluida com sucesso!")
+            router.push('/home');
+        }
     }
     
     return (
@@ -291,8 +326,8 @@ export default function VisualizarTarefaPage() {
                 )}
                 
                 <Text style={[style.descricaoTitle, { marginTop: 10}]}>Anexos</Text>
-                <View>
-                    <TouchableOpacity 
+                {/* <View>
+                     <TouchableOpacity 
                         style={style.addAnexoButton}
                         onPress={() => {}}
                         >
@@ -301,7 +336,7 @@ export default function VisualizarTarefaPage() {
                             <Text style={style.adicionarTitle}>Adicionar novo anexo</Text>
                         </View>
                     </TouchableOpacity>
-                </View>
+                </View> */}
                 <View style={style.adicionarNotaTitle}>
                     <Text style={style.descricaoTitle}>Notas</Text>
                     <Text onPress={() => setModalVisible(true)} style={style.lerMais}>
@@ -357,17 +392,15 @@ export default function VisualizarTarefaPage() {
                         value={prazo || new Date()}
                         mode="date"
                         display="default"
-                        // is24Hour={true}
                         onChange={onPrazoChange}
                     />
                 )}
 
-                {/* {showInicioPicker && (
+               {showInicioPicker && (
                     <DateTimePicker
                         value={dataInicio || new Date()}
-                        mode="datetime"
-                        // is24Hour={true}
-                        display={Platform.OS === 'android' ? "spinner" : "default"}
+                        mode="date"
+                        display="default"
                         onChange={onDataInicioChange}
                     />
                 )}
@@ -375,17 +408,17 @@ export default function VisualizarTarefaPage() {
                 {showConclusaoPicker && (
                     <DateTimePicker
                         value={dataConclusao || new Date()}
-                        mode="datetime"
-                        // is24Hour={true}
-                        display={Platform.OS === 'android' ? "spinner" : "default"}
+                        mode="date"
+                        display="default"
                         onChange={onDataConclusaoChange}
                     />
-                )} */}
+                )} 
             </ScrollView>
             <EditarIcon 
                     isEditing={isEditing} 
                     onToggleEdit={handleToggleEdit} 
                     onSave={handleAtualizarTarefa}
+                    onDelete={handleExcluirTarefa}
                 />
         </View>
     );

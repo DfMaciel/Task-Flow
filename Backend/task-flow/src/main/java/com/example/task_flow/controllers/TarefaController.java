@@ -71,6 +71,7 @@ public class TarefaController {
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizarTarefa(Authentication authentication, @PathVariable Long id, @RequestBody AtualizarTarefaDto atualizarTarefaDto) {
         String email = (String) authentication.getPrincipal();
+        System.out.println(atualizarTarefaDto);
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
         if (usuarioOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Usuário não encontrado");
@@ -160,7 +161,11 @@ public class TarefaController {
         if (!tarefa.getUsuario().equals(usuarioOptional.get())) {
             return ResponseEntity.status(403).body("Usuário não tem permissão para deletar a tarefa");
         }
-        tarefaRepository.delete(tarefa);
+        try {
+            tarefaService.deletarTarefa(id);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
         return ResponseEntity.ok("Tarefa deletada");
     }
 }

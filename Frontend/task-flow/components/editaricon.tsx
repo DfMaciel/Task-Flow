@@ -5,12 +5,14 @@ type EditarFABProps = {
     isEditing: boolean;
     onToggleEdit: () => void;
     onSave?: () => void;
+    onDelete?: () => void;
   };
   
   export default function EditarIcon({ 
     isEditing, 
     onToggleEdit, 
     onSave,
+    onDelete
   }: EditarFABProps) {
     
     return (
@@ -18,6 +20,13 @@ type EditarFABProps = {
         {isEditing ? (
           // When editing, show both cancel and save buttons
           <View style={styles.editingButtonsContainer}>
+            <FAB
+              style={[styles.fab, styles.deleteFab]}
+              icon="delete"
+              onPress={onDelete}
+              color="#FFFFFF"
+              customSize={48}
+            />
             <FAB
               style={[styles.fab, styles.cancelFab]}
               icon="close"
@@ -59,7 +68,7 @@ type EditarFABProps = {
     editingButtonsContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      width: 110,
+      width: 150,
     },
     fab: {
       margin: 0,
@@ -71,4 +80,7 @@ type EditarFABProps = {
     saveFab: {
       backgroundColor: '#6750A4',
     },
+    deleteFab: {
+      backgroundColor: 'red'
+    }
   });

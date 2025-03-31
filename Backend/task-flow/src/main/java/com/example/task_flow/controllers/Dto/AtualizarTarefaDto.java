@@ -7,8 +7,6 @@ import java.util.Optional;
 public record AtualizarTarefaDto(
         Optional<String> titulo,
         Optional<String> descricao,
-        Optional<String> status,
-        Optional<String> prioridade,
         Optional<String> tempoEstimado,
         Optional<LocalDate> prazo,
         Optional<LocalDateTime> dataInicio,
