@@ -6,6 +6,7 @@ import com.example.task_flow.entities.Tarefa;
 import com.example.task_flow.entities.Usuario;
 import com.example.task_flow.repository.TarefaRepository;
 import com.example.task_flow.repository.UsuarioRepository;
+import com.example.task_flow.utils.VerificadorData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +23,9 @@ public class TarefaService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private VerificadorData verificadorData;
 
     public List<Tarefa> listarTarefas(Usuario usuario) {
         List<Tarefa> tarefas = tarefaRepository.findByUsuario(usuario);
@@ -66,9 +70,15 @@ public class TarefaService {
             tarefa.setPrazo(atualizarTarefaDto.prazo().get());
         }
         if (atualizarTarefaDto.dataInicio().isPresent()) {
+            if (!verificadorData.verificarDataConclusao(atualizarTarefaDto.dataInicio().get(), atualizarTarefaDto.dataConclusao().orElse(null))) {
+                throw new IllegalArgumentException("A data de conclusão deve ser posterior à data de início.");
+            }
             tarefa.setDataInicio(atualizarTarefaDto.dataInicio().get());
         }
         if (atualizarTarefaDto.dataConclusao().isPresent()) {
+            if (!verificadorData.verificarDataConclusao(tarefa.getDataInicio(), atualizarTarefaDto.dataConclusao().get())) {
+                throw new IllegalArgumentException("A data de conclusão deve ser posterior à data de início.");
+            }
             tarefa.setDataConclusao(atualizarTarefaDto.dataConclusao().get());
         }
         tarefaRepository.save(tarefa);

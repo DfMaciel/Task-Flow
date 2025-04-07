@@ -1,5 +1,3 @@
-import api from "@/services/api";
-import { router } from "expo-router";
 import React, { SetStateAction, useState } from "react";
 import { View, StyleSheet, Text, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { Button, IconButton, Surface, TextInput } from "react-native-paper";

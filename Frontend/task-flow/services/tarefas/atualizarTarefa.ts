@@ -5,9 +5,7 @@ import { AtualizarTarefa } from "@/types/TarefaInteface";
 export default async function atualizarTarefa(id: number, tarefaAtualizada: Record<string, any>) {
     try {
         console.log("atualizarTarefa", tarefaAtualizada);
-        const resposta = await api.put(`/tarefas/${id}`, { 
-            tarefaAtualizada
-         });
+        const resposta = await api.put(`/tarefas/${id}`, tarefaAtualizada);
         if (resposta.status === 201) {
                 return { status: resposta.status, data: resposta.data };
             } else {

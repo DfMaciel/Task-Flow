@@ -156,7 +156,6 @@ export default function VisualizarTarefaPage() {
         try {
             const changedFields: Record<string, any> = {};
     
-            // Check each field against the original task data
             if (titulo !== tarefa?.titulo) {
                 changedFields['titulo'] = titulo;
             }
@@ -174,16 +173,25 @@ export default function VisualizarTarefaPage() {
                 changedFields['prazo'] = formattedPrazo;
             }
             
-            const formattedDataInicio = dataInicio ? dataInicio.toISOString().split('T')[0] : "";
-            if (formattedDataInicio !== tarefa?.dataInicio) {
-                changedFields['dataInicio'] = formattedDataInicio;
+            if (dataInicio) {
+                const formattedDataInicio = dataInicio.toISOString();
+                if (formattedDataInicio !== tarefa?.dataInicio) {
+                    changedFields['dataInicio'] = formattedDataInicio;
+                }
+            } else if (tarefa?.dataInicio) {
+                changedFields['dataInicio'] = null;
+            }
+
+            if (dataConclusao) {
+                const formattedDataConclusao = dataConclusao.toISOString();
+                if (formattedDataConclusao !== tarefa?.dataConclusao) {
+                    changedFields['dataConclusao'] = formattedDataConclusao;
+                }
+            } else if (tarefa?.dataConclusao) {
+                changedFields['dataConclusao'] = null;
             }
             
-            const formattedDataConclusao = dataConclusao ? dataConclusao.toISOString().split('T')[0] : "";
-            if (formattedDataConclusao !== tarefa?.dataConclusao) {
-                changedFields['dataConclusao'] = formattedDataConclusao;
-            }
-            
+            console.log('Changed fields:', changedFields);
             const resposta = await atualizarTarefa(Number(id), changedFields);
             if (resposta.status === 200) {
                 alert("Tarefa atualizada com sucesso!");
