@@ -28,6 +28,10 @@ public class Usuario {
     @JsonIgnoreProperties("usuario")
     private List<Tarefa> tarefas = new ArrayList<>();
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("usuario")
+    private List<Categoria> categorias = new ArrayList<>();
+
     public Usuario() {
     }
 
@@ -116,5 +120,14 @@ public class Usuario {
 
     public String toString() {
         return "Usuario(id=" + this.getId() + ", nome=" + this.getNome() + ", email=" + this.getEmail() + ", senha=" + this.getSenha() + ", tarefas=" + (this.tarefas != null ? "[" + this.tarefas.size() + " items]" : "null") + ")";
+    }
+
+    public List<Categoria> getCategorias() {
+        return this.categorias;
+    }
+
+    @JsonIgnoreProperties("usuario")
+    public void setCategorias(List<Categoria> categorias) {
+        this.categorias = categorias;
     }
 }

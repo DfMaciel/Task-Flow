@@ -1,6 +1,5 @@
 package com.example.task_flow.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
@@ -54,6 +53,11 @@ public class Tarefa {
     @JoinColumn(name = "usuario_id")
     @JsonIgnoreProperties("tarefas")
     private Usuario usuario;
+
+    @OneToOne
+    @JoinColumn(name = "categoria_id")
+//    @JsonIgnoreProperties("tarefas")
+    private Categoria categoria;
 
     public Tarefa() {
     }
@@ -239,5 +243,13 @@ public class Tarefa {
 
     public String toString() {
         return "Tarefa(id=" + this.getId() + ", titulo=" + this.getTitulo() + ", descricao=" + this.getDescricao() + ", status=" + this.getStatus() + ", dataCriacao=" + this.getDataCriacao() + ", dataInicio=" + this.getDataInicio() + ", dataConclusao=" + this.getDataConclusao() + ", prazo=" + this.getPrazo() + ", prioridade=" + this.getPrioridade() + ", tempoEstimado=" + this.getTempoEstimado() + ", notas=" + this.getNotas() + ", usuarioId=" + (this.getUsuario() != null ? this.usuario.getId().toString() : null) + ")";
+    }
+
+    public Categoria getCategoria() {
+        return this.categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 }

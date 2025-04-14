@@ -2,8 +2,10 @@ package com.example.task_flow.services;
 
 import com.example.task_flow.controllers.Dto.AtualizarTarefaDto;
 import com.example.task_flow.controllers.Dto.CadastroTarefaDto;
+import com.example.task_flow.entities.Categoria;
 import com.example.task_flow.entities.Tarefa;
 import com.example.task_flow.entities.Usuario;
+import com.example.task_flow.repository.CategoriaRepository;
 import com.example.task_flow.repository.TarefaRepository;
 import com.example.task_flow.repository.UsuarioRepository;
 import com.example.task_flow.utils.VerificadorData;
@@ -23,6 +25,9 @@ public class TarefaService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
 
     @Autowired
     private VerificadorData verificadorData;
@@ -108,6 +113,21 @@ public class TarefaService {
 
     public void atualizarPrioridadeTarefa(Tarefa tarefa, String prioridade) {
         tarefa.setPrioridade(prioridade);
+        tarefaRepository.save(tarefa);
+    }
+
+    public void atualizarCategoriaTarefa(Tarefa tarefa, Long idCategoria) {
+        Optional<Categoria> categoriaOptional = categoriaRepository.findById(idCategoria);
+        if (categoriaOptional.isEmpty()) {
+            throw new IllegalArgumentException("Categoria não encontrada");
+        }
+        Categoria categoria = categoriaOptional.get();
+
+        if (!tarefa.getUsuario().equals(categoria.getUsuario())) {
+            throw new IllegalArgumentException("Usuário não tem permissão para atualizar a categoria da tarefa");
+        }
+
+        tarefa.setCategoria(categoria);
         tarefaRepository.save(tarefa);
     }
 
