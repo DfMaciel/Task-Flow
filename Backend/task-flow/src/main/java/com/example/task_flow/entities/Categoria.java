@@ -1,5 +1,6 @@
 package com.example.task_flow.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -16,6 +17,7 @@ public class Categoria {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonIgnoreProperties({"categorias", "tarefas", "senha", "email"})
     private Usuario usuario;
 
     public Categoria() {

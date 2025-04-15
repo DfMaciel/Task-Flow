@@ -51,12 +51,12 @@ public class Tarefa {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
-    @JsonIgnoreProperties("tarefas")
+    @JsonIgnoreProperties({"tarefas", "categorias", "senha", "email"})
     private Usuario usuario;
 
     @OneToOne
     @JoinColumn(name = "categoria_id")
-//    @JsonIgnoreProperties("tarefas")
+    @JsonIgnoreProperties({"tarefas", "usuario"})
     private Categoria categoria;
 
     public Tarefa() {
