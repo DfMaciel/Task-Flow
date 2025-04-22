@@ -8,6 +8,7 @@ export interface VisualizarTarefa {
     dataCriacao: string;
     dataInicio?: string;
     dataConclusao?: string;
+    categoria?: string;
     prazo: string;
     prioridade: string;
     tempoEstimado?: string;
@@ -18,6 +19,7 @@ export interface CriarTarefa {
     titulo: string;
     descricao: string;
     prioridade: string;
+    categoria?: string;
     tempoEstimado?: number | null;
     dataEntrega?: string;
 }
