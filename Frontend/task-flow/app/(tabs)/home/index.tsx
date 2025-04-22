@@ -15,6 +15,10 @@ const TelaHome = () => {
   const [tarefas, setTarefas] = useState<VisualizarTarefa[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const { filters } = useLocalSearchParams();
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [currentFilters, setCurrentFilters] = useState<FiltrosOptions>({
+    prioridade: null, status: null, prazo: null, categoria: null
+  });
   
     async function carregarTarefas() {
       console.log("Buscando tarefas")
@@ -29,15 +33,6 @@ const TelaHome = () => {
   useEffect(() => {
     carregarTarefas();
   }, []);
-
-  const currentFilters: FiltrosOptions = useMemo(() => {
-    try {
-      return filters ? JSON.parse(filters as string) : { prioridade: null, status: null, prazo: null, categoria: null };
-    } catch (e) {
-      console.error("Failed to parse filters:", e);
-      return { prioridade: null, status: null, prazo: null, categoria: null }; // Fallback on parse error
-    }
-  }, [filters]);
   
   const tarefasFiltradas = useMemo(() => {
       return tarefas.filter((tarefa) => {
@@ -75,6 +70,11 @@ const TelaHome = () => {
     );
   }
 
+  const handleApplyFilters = (appliedFilters: FiltrosOptions) => {
+    setCurrentFilters(appliedFilters); 
+    setFilterModalVisible(false);
+  };
+
   return (
     <View style={styles.container}>
         <Text style={styles.title}>Bem vindo de volta!</Text>
@@ -88,6 +88,14 @@ const TelaHome = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
+      
+      <FilterModal
+        visible={filterModalVisible}
+        onDismiss={() => setFilterModalVisible(false)}
+        currentFilters={currentFilters} // Use local state
+        onApplyFilters={handleApplyFilters}
+      />
+      
       <AdicionarIcon/>
     </View>
   );
