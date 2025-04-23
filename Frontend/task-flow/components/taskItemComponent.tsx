@@ -4,6 +4,7 @@ import PrioridadeComponent from "./prioridadeComponent";
 import StatusComponent from "./statusComponent";
 import { Icon } from "react-native-paper";
 import formatPrazo from "@/utils/dateTimeParser";
+import CategoriaComponent from "./categoriaComponent";
 
 export default function TaskItemComponent({ tarefa, onPress }: { tarefa: VisualizarTarefa, onPress: () => void }) {
     return (
@@ -14,7 +15,7 @@ export default function TaskItemComponent({ tarefa, onPress }: { tarefa: Visuali
                     {tarefa.descricao.length > 100 && "..."}
                 </Text> */}
                 <View style={styles.infoContainer}>
-                    {tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} /> }
+                    {tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} isEditable={false} /> }
                     {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={false} /> }
                     <View style={styles.dataContainer}>
                         <Icon source="calendar-alert" size={24} color="#000"/>

@@ -18,6 +18,9 @@ import { Icon, IconButton, TextInput } from "react-native-paper";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import atualizarTarefa from "@/services/tarefas/atualizarTarefa";
 import excluirTarefa from "@/services/tarefas/deletarTarefa";
+import { VisualizarCategoria } from "@/types/CategoriasInterface";
+import CategoriaComponent from "@/components/categoriaComponent";
+import atualizarCategoriaTarefa from "@/services/tarefas/atualizarCategoriaTarefa";
 
 
 export default function VisualizarTarefaPage() {
@@ -37,10 +40,13 @@ export default function VisualizarTarefaPage() {
     const [tempoEstimado, setTempoEstimado] = useState("");
     const [dataInicio , setDataInicio] = useState<Date | null>(null);
     const [dataConclusao , setDataConclusao] = useState<Date | null>(null);
+    const [categoria, setCategoria] = useState<VisualizarCategoria | null>(null)
+    const [categorias, setCategorias] = useState<VisualizarCategoria[]>([]);
     
     const [showPrazoPicker, setShowPrazoPicker] = useState(false);
     const [showInicioPicker, setShowInicioPicker] = useState(false);
     const [showConclusaoPicker, setShowConclusaoPicker] = useState(false);
+    const [showCategoriaPicker, setShowCategoriaPicker] = useState(false);
 
     const router = useRouter()
 
@@ -68,6 +74,7 @@ export default function VisualizarTarefaPage() {
             setPrazo(tarefa.prazo ? new Date(tarefa.prazo) : null);
             setDataInicio(tarefa.dataInicio ? new Date(tarefa.dataInicio) : null);
             setDataConclusao(tarefa.dataConclusao ? new Date(tarefa.dataConclusao) : null);
+            setCategoria(tarefa.categoria || null);
         }
     }, [tarefa]);
 
@@ -133,6 +140,18 @@ export default function VisualizarTarefaPage() {
             const resultado = await atualizarPrioridadeTarefa(Number(id), newPrioridade);
             if (resultado.status === 200) {
                 console.log("Prioridade alterada com sucesso");
+                await carregarTarefa();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    
+    async function trocarCategoria(newCategoria: VisualizarCategoria) {
+        try {
+            const resultado = await atualizarCategoriaTarefa(Number(id), Number(newCategoria.id));
+            if (resultado.status === 200) {
+                console.log("Categoria alterada com sucesso");
                 await carregarTarefa();
             }
         } catch (error) {
@@ -307,6 +326,7 @@ export default function VisualizarTarefaPage() {
                 )}
                 <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} isEditable={true} onPrioridadeChange={trocarPrioridade} /> }
                     {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={true} onStatusChange={trocarStatus} /> }
+                    {tarefa?.categoria && <CategoriaComponent categoria={tarefa?.categoria?? null} isEditable={true} onCategoriaChange={trocarCategoria} />}
                 </View>
                 <Text style={style.descricaoTitle}>Descrição da tarefa</Text>
                 {isEditing ? (
