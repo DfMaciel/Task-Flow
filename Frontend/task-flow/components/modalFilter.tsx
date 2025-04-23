@@ -29,7 +29,7 @@ export default function FilterModal({ visible, onDismiss, onApplyFilters, curren
               <Text style={styles.sectionTitle}>Prioridade</Text>
               <SegmentedButtons
                 value={filters.prioridade || ''}
-                onValueChange={value => setFilters({...filters, prioridade: value || null})}
+                onValueChange={value => setFilters({...filters, prioridade: filters.prioridade === value ? null : value})}
                 buttons={[
                   { value: '3', label: 'Alta' },
                   { value: '2', label: 'Média' },
@@ -42,10 +42,10 @@ export default function FilterModal({ visible, onDismiss, onApplyFilters, curren
               <Text style={styles.sectionTitle}>Status</Text>
               <SegmentedButtons
                 value={filters.status || ''}
-                onValueChange={value => setFilters({...filters, status: value || null})}
+                onValueChange={value => setFilters({...filters, status: filters.status === value ? null : value})}
                 buttons={[
                   { value: 'naoiniciada', label: 'Não iniciada' },
-                  { value: 'emandamento', label: 'Em Andamento' },
+                  { value: 'emandamento', label: 'Andamento' },
                   { value: 'concluida', label: 'Concluída' },
                 ]}
               />
@@ -55,7 +55,7 @@ export default function FilterModal({ visible, onDismiss, onApplyFilters, curren
               <Text style={styles.sectionTitle}>Prazo</Text>
               <SegmentedButtons
                 value={filters.prazo || ''}
-                onValueChange={value => setFilters({...filters, prazo: value || null})}
+                onValueChange={value => setFilters({...filters, prazo: filters.prazo === value ? null : value})}
                 buttons={[
                   { value: 'HOJE', label: 'Hoje' },
                   { value: 'SEMANA', label: 'Esta Semana' },

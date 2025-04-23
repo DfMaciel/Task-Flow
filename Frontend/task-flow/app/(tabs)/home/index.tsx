@@ -6,7 +6,7 @@ import { VisualizarTarefa } from "@/types/TarefaInteface";
 import { useEffect, useMemo, useState } from "react";
 import ListarTarefas from "@/services/tarefas/listarTarefasService";
 import TaskItemComponent from "@/components/taskItemComponent";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { FiltrosOptions } from "@/types/FiltrosInterface";
 import { IconButton } from "react-native-paper";
 import FilterModal from "@/components/modalFilter";
@@ -14,7 +14,6 @@ import FilterModal from "@/components/modalFilter";
 const TelaHome = () => {
   const [tarefas, setTarefas] = useState<VisualizarTarefa[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { filters } = useLocalSearchParams();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<FiltrosOptions>({
     prioridade: null, status: null, prazo: null, categoria: null
@@ -50,6 +49,8 @@ const TelaHome = () => {
         if (currentFilters.categoria && (!tarefa.categoria || tarefa.categoria !== currentFilters.categoria)) {
           return false;
         }
+        
+        return true
     });
   }, [tarefas, currentFilters]);
   
@@ -77,7 +78,17 @@ const TelaHome = () => {
 
   return (
     <View style={styles.container}>
+      <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
         <Text style={styles.title}>Bem vindo de volta!</Text>
+        <IconButton
+          icon="filter-outline"
+          size={30}
+          onPress={() => setFilterModalVisible(true)}
+          style={styles.button}
+          iconColor="#000"
+          rippleColor="rgba(0, 0, 0, .32)"
+        />
+      </View>
       <Text style={styles.tarefasSubTitle}>Suas tarefas:</Text>
       <FlatList
         data={tarefasFiltradas}
@@ -115,6 +126,8 @@ const styles = StyleSheet.create({
   },
   button: {
     margin: 10,
+    position: "absolute",
+    right: 0,
   },
   title: {
     fontSize: 24,
