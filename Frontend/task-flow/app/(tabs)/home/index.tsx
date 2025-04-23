@@ -10,6 +10,7 @@ import { router } from "expo-router";
 import { FiltrosOptions } from "@/types/FiltrosInterface";
 import { IconButton } from "react-native-paper";
 import FilterModal from "@/components/modalFilter";
+import dateComparer from "@/utils/dateComparer";
 
 const TelaHome = () => {
   const [tarefas, setTarefas] = useState<VisualizarTarefa[]>([]);
@@ -48,6 +49,13 @@ const TelaHome = () => {
         // Check categoria filter (add null check for tarefa.categoria if it's optional)
         if (currentFilters.categoria && (!tarefa.categoria || tarefa.categoria !== currentFilters.categoria)) {
           return false;
+        }
+
+        if (currentFilters.prazo) {
+          let prazoVerificado = dateComparer(currentFilters?.prazo, tarefa.prazo, currentFilters?.dataPersonalizada? currentFilters.dataPersonalizada : null)
+          if (prazoVerificado === false) {
+            return false;
+          }
         }
         
         return true

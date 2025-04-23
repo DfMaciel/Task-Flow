@@ -1,3 +1,4 @@
+import { VisualizarCategoria } from "./CategoriasInterface";
 import { VisualizarNota } from "./NotasInterface";
 
 export interface VisualizarTarefa {
@@ -8,7 +9,7 @@ export interface VisualizarTarefa {
     dataCriacao: string;
     dataInicio?: string;
     dataConclusao?: string;
-    categoria?: string;
+    categoria?: VisualizarCategoria;
     prazo: string;
     prioridade: string;
     tempoEstimado?: string;

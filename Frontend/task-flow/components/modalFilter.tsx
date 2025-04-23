@@ -1,7 +1,12 @@
-import { Modal, Portal, Button, Surface, Text, SegmentedButtons, useTheme } from 'react-native-paper';
+import { Modal, Portal, Button, Surface, Text, SegmentedButtons, useTheme, Menu } from 'react-native-paper';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiltrosOptions } from '@/types/FiltrosInterface';
+import { Platform } from 'react-native';
+import { VisualizarCategoria } from '@/types/CategoriasInterface';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import listarCategorias from '@/services/categorias/listarCategorias';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface FilterModalProps {
   visible: boolean;
@@ -13,6 +18,47 @@ interface FilterModalProps {
 export default function FilterModal({ visible, onDismiss, onApplyFilters, currentFilters }: FilterModalProps) {
   const theme = useTheme();
   const [filters, setFilters] = useState<FiltrosOptions>(currentFilters);
+  const [categorias, setCategorias] = useState<VisualizarCategoria[]>([]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [categoriasMenuVisible, setCategoriasMenuVisible] = useState(false);
+
+  useEffect(() => {
+    async function fetchCategorias() {
+      try {
+        const resposta = await listarCategorias();
+        if (resposta.status === 200) {
+          setCategorias(resposta.data);
+        } else {
+          console.error('Erro ao listar categorias:', resposta.data);
+        }
+      } catch (error) {
+        console.error('Erro ao listar categorias:', error);
+      }
+    }
+    fetchCategorias();
+  }, []);
+  
+  const handlePrazoChange = (value: string) => {
+    if (value === 'PERSONALIZADO') {
+      setShowDatePicker(true);
+    }
+    setFilters({
+      ...filters,
+      prazo: value === filters.prazo ? null : value,
+      dataPersonalizada: value === 'PERSONALIZADO' ? filters.dataPersonalizada || new Date().toISOString().split('T')[0] : null,
+    });
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setFilters({
+        ...filters,
+        prazo: 'PERSONALIZADO',
+        dataPersonalizada: selectedDate.toISOString().split('T')[0],
+      });
+    }
+  };
 
   return (
     <Portal>
@@ -55,26 +101,78 @@ export default function FilterModal({ visible, onDismiss, onApplyFilters, curren
               <Text style={styles.sectionTitle}>Prazo</Text>
               <SegmentedButtons
                 value={filters.prazo || ''}
-                onValueChange={value => setFilters({...filters, prazo: filters.prazo === value ? null : value})}
+                onValueChange={handlePrazoChange}
                 buttons={[
                   { value: 'HOJE', label: 'Hoje' },
-                  { value: 'SEMANA', label: 'Esta Semana' },
+                  { value: 'SEMANA', label: 'Semana' },
                   { value: 'MES', label: 'Este Mês' },
+                  { value: 'PERSONALIZADO', icon: (props) => (
+                    <MaterialCommunityIcons
+                      name="calendar"
+                      size={18}
+                      color={props.color}
+                      style={{ margin: 0, padding: 0 }} // Remove extra space
+                    />),},
                 ]}
               />
+              {filters.prazo === 'PERSONALIZADO' && filters.dataPersonalizada && (
+                <View style={styles.minimalDateRow}>
+                  <Text style={styles.minimalDateText}>Prazo personalizado: {new Date(filters.dataPersonalizada).toLocaleDateString('pt-BR')}</Text>
+                  <Button
+                    onPress={() => setShowDatePicker(true)}
+                    mode="text"
+                    compact
+                    style={styles.minimalDateButton}
+                    labelStyle={styles.minimalDateButtonLabel}
+                  >
+                    Alterar
+                  </Button>
+                </View>
+              )}
+              {showDatePicker && (
+                <DateTimePicker
+                  value={filters.dataPersonalizada ? new Date(filters.dataPersonalizada) : new Date()}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={handleDateChange}
+                />
+              )}
             </View>
 
             <View style={styles.filterSection}>
               <Text style={styles.sectionTitle}>Categoria</Text>
-              <SegmentedButtons
-                value={filters.categoria || ''}
-                onValueChange={value => setFilters({...filters, categoria: value || null})}
-                buttons={[
-                  { value: 'TRABALHO', label: 'Trabalho' },
-                  { value: 'PESSOAL', label: 'Pessoal' },
-                  { value: 'ESTUDO', label: 'Estudo' },
-                ]}
-              />
+              <Menu
+                  visible={categoriasMenuVisible}
+                  onDismiss={() => setCategoriasMenuVisible(false)}
+                  anchor={
+                    <Button
+                      mode="outlined"
+                      onPress={() => setCategoriasMenuVisible(true)}
+                      style={{ justifyContent: 'flex-start' }}
+                      contentStyle={{ justifyContent: 'flex-start' }}
+                    >
+                      {filters.categoria?.nome || 'Selecione uma categoria'}
+                    </Button>
+                  }
+                >
+                  {categorias.map(cat => (
+                    <Menu.Item
+                      key={cat.nome}
+                      onPress={() => {
+                        setFilters({ ...filters, categoria: cat });
+                        setCategoriasMenuVisible(false);
+                      }}
+                      title={cat.nome}
+                    />
+                  ))}
+                  <Menu.Item
+                    onPress={() => {
+                      setFilters({ ...filters, categoria: null });
+                      setCategoriasMenuVisible(false);
+                    }}
+                    title="Limpar seleção"
+                  />
+                </Menu>
             </View>
           </ScrollView>
 
@@ -136,5 +234,29 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  minimalDateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: -15
+  },
+  minimalDateText: {
+    fontSize: 14,
+    color: '#444',
+    marginRight: 4,
+    fontWeight: "bold",
+  },
+  minimalDateButton: {
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    minWidth: 0,
+    elevation: 0,
+  },
+  minimalDateButtonLabel: {
+    fontSize: 14,
+    color: '#6200ee',
+    textTransform: 'none',
+    fontWeight: '400',
+    padding: 0,
   },
 });
