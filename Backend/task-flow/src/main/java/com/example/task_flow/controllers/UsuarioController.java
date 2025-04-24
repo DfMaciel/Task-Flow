@@ -2,14 +2,17 @@ package com.example.task_flow.controllers;
 
 import com.example.task_flow.controllers.Dto.CadastroUsuarioDto;
 import com.example.task_flow.entities.Usuario;
+import com.example.task_flow.repository.UsuarioRepository;
 import com.example.task_flow.services.UsuarioService;
 import jakarta.persistence.EntityExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -17,6 +20,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @PostMapping()
     public ResponseEntity<?> cadastrarUsuario(@RequestBody CadastroUsuarioDto usuario) {
@@ -33,6 +39,18 @@ public class UsuarioController {
     public List<Usuario> listarUsuarios() {
         List<Usuario> usuarios = usuarioService.listarUsuarios();
         return usuarios;
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<?> buscarUsuarioPorEmail(Authentication authentication) {
+        String email = (String) authentication.getPrincipal();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Usuario usuario = usuarioOptional.get();
+
+        return ResponseEntity.ok(usuario);
     }
 
     @GetMapping("/{id}")
