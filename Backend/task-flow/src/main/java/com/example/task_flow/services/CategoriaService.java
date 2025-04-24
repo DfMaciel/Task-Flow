@@ -23,6 +23,9 @@ public class CategoriaService {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
+    @Autowired
+    private TarefaRepository tarefaRepository;
+
     public List<Categoria> listarCategorias (Usuario usuario) {
         List<Categoria> categorias = categoriaRepository.findByUsuario(usuario);
         return categorias;
@@ -52,10 +55,16 @@ public class CategoriaService {
     }
 
     public void deletarCategoria(Long id) throws Exception {
-        Optional<Categoria> categoria = categoriaRepository.findById(id);
-        if (categoria.isEmpty()) {
+        Optional<Categoria> categoriaOpcional = categoriaRepository.findById(id);
+        if (categoriaOpcional.isEmpty()) {
             throw new Exception("Categoria não encontrada");
         }
-        categoriaRepository.delete(categoria.get());
+        Categoria categoria = categoriaOpcional.get();
+        List<Tarefa> tarefas = tarefaRepository.findByCategoria(categoria);
+        for (Tarefa tarefa : tarefas) {
+            tarefa.setCategoria(null);
+            tarefaRepository.save(tarefa);
+        }
+        categoriaRepository.delete(categoria);
     }
 }

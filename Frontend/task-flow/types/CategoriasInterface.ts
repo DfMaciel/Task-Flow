@@ -6,3 +6,7 @@ export interface VisualizarCategoria {
         nome: string;
     }
 }
+
+export interface CriarCategoria {
+    nome: string;
+}

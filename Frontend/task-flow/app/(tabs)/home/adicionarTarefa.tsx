@@ -1,10 +1,12 @@
 import { View, StyleSheet, Text, Platform, KeyboardAvoidingView, ScrollView} from "react-native";
 import { TextInput, Button, useTheme } from "react-native-paper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import adicionarTarefas from "@/services/tarefas/adicionarTarefas";
 import DialogErrorComponent from "@/components/dialogErrorComponent";
+import { VisualizarCategoria } from "@/types/CategoriasInterface";
+import listarCategorias from "@/services/categorias/listarCategorias";
 
 export default function AdicionarTarefaPage() {
     const [titulo, setTitulo] = useState("");
@@ -27,12 +29,34 @@ export default function AdicionarTarefaPage() {
     ]);
 
     const [showDatePicker, setShowDatePicker] = useState(false);
+    
+    const [openCategoria, setOpenCategoria] = useState(false);
+    const [categorias, setCategorias] = useState<{ label: string; value: number }[]>([]);
+    const [categoria, setCategoria] = useState<number | null>(null);
 
     const onChangePrazo = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || prazo;
         setShowDatePicker(Platform.OS === 'ios');
         setPrazo(currentDate);
     };
+    
+    useEffect(() => {
+        async function fetchCategorias() {
+            try {
+                const resposta = await listarCategorias();
+                setCategorias(
+                    resposta.data.map((cat: VisualizarCategoria) => ({
+                        label: cat.nome,
+                        value: cat.id,
+                    }))
+                );
+            } catch (error) {
+                setCategorias([]);
+            }
+        }
+        fetchCategorias();
+    }
+    , []);
 
     async function handleAdicionarTarefa() {
         let hasError = false;  
@@ -61,6 +85,7 @@ export default function AdicionarTarefaPage() {
                 descricao,
                 prioridade,
                 tempoEstimado: tempoEstimado ? Number(tempoEstimado) : null,
+                idCategoria: categoria ? Number(categoria) : null,
                 prazo: prazo.toISOString().split('T')[0],
             };
 
@@ -71,6 +96,7 @@ export default function AdicionarTarefaPage() {
                 setTitulo("");
                 setDescricao("");
                 setPrioridade("");
+                setCategoria(null);
                 setTempoEstimado("");
                 setPrazo(new Date());
             }
@@ -150,7 +176,25 @@ export default function AdicionarTarefaPage() {
                     { borderColor: tema.colors.primary, borderWidth: 1.5 }
                 ]}
             />
-            {prioridadeError && <Text style={{ color: 'red' }}>Selecione uma prioridade.</Text>}
+            <DropDownPicker
+                open={openCategoria}
+                value={categoria}
+                items={categorias}
+                setOpen={setOpenCategoria}
+                setValue={setPrioridade}
+                setItems={setCategorias}
+                placeholder="Selecione uma categoria"
+                listMode="SCROLLVIEW"
+                tickIconStyle={{ tintColor: tema.colors.primary } as any}
+                style={[
+                    styles.dropdown, 
+                    // { borderBottomColor: tema.colors.surface },
+                    prioridadeError? styles.inputError : {}
+                ]}
+                dropDownContainerStyle={[styles.dropdownContainer,
+                    { borderColor: tema.colors.primary, borderWidth: 1.5 }
+                ]}
+            />
             <TextInput
                 label="Tempo estimado (horas)"
                 value={tempoEstimado}

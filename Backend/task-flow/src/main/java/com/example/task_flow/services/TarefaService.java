@@ -52,6 +52,17 @@ public class TarefaService {
         tarefa.setTitulo(cadastroTarefaDto.titulo());
         tarefa.setDescricao(cadastroTarefaDto.descricao());
         tarefa.setPrioridade(cadastroTarefaDto.prioridade());
+        if (cadastroTarefaDto.idCategoria().isPresent()) {
+            Optional<Categoria> categoriaOptional = categoriaRepository.findById(cadastroTarefaDto.idCategoria().get());
+            if (categoriaOptional.isEmpty()) {
+                throw new IllegalArgumentException("Categoria não encontrada");
+            }
+            Categoria categoria = categoriaOptional.get();
+            if (!usuario.equals(categoria.getUsuario())) {
+                throw new IllegalArgumentException("Usuário não tem permissão para cadastrar a tarefa nesta categoria");
+            }
+            tarefa.setCategoria(categoria);
+        }
         cadastroTarefaDto.tempoEstimado().ifPresent(tarefa::setTempoEstimado);
         cadastroTarefaDto.prazo().ifPresent(tarefa::setPrazo);
         LocalDateTime dataAtual = LocalDateTime.now();
