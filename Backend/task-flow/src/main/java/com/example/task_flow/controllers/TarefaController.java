@@ -169,6 +169,29 @@ public class TarefaController {
         }
     }
 
+    @PatchMapping("/{id}/categoria/desvincular")
+    public ResponseEntity<?> desvincularCategoriaTarefa(Authentication authentication, @PathVariable Long id) {
+        String email = (String) authentication.getPrincipal();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Optional<Tarefa> tarefaOptional = tarefaRepository.findById(id);
+        if (tarefaOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Tarefa não encontrada");
+        }
+        Tarefa tarefa = tarefaOptional.get();
+        if (!tarefa.getUsuario().equals(usuarioOptional.get())) {
+            return ResponseEntity.status(403).body("Usuário não tem permissão para atualizar a tarefa");
+        }
+        try {
+            tarefaService.desvincularCategoriaTarefa(tarefa);
+            return ResponseEntity.ok("Categoria da tarefa removida");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarTarefa(Authentication authentication, @PathVariable Long id) {
         String email = (String) authentication.getPrincipal();

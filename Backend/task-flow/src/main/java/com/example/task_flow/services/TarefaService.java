@@ -142,6 +142,11 @@ public class TarefaService {
         tarefaRepository.save(tarefa);
     }
 
+    public void desvincularCategoriaTarefa(Tarefa tarefa) {
+        tarefa.setCategoria(null);
+        tarefaRepository.save(tarefa);
+    }
+
     public void deletarTarefa(Long id) {
         tarefaRepository.deleteById(id);
     }
