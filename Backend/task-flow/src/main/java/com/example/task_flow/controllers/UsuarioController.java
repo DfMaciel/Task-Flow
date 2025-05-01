@@ -1,5 +1,6 @@
 package com.example.task_flow.controllers;
 
+import com.example.task_flow.controllers.Dto.AtualizarUsuarioDto;
 import com.example.task_flow.controllers.Dto.CadastroUsuarioDto;
 import com.example.task_flow.entities.Usuario;
 import com.example.task_flow.repository.UsuarioRepository;
@@ -63,8 +64,19 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public String atualizarUsuario() {
-        return "Usuário atualizado";
+    public ResponseEntity<?> atualizarUsuario(Authentication authentication, @RequestBody AtualizarUsuarioDto usuarioDto) {
+        String email = (String) authentication.getPrincipal();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Usuario usuario = usuarioOptional.get();
+        try {
+            usuarioService.atualizarUsuario(usuario, usuarioDto);
+            return ResponseEntity.ok("Usuário atualizado");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

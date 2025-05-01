@@ -1,5 +1,6 @@
 package com.example.task_flow.services;
 
+import com.example.task_flow.controllers.Dto.AtualizarUsuarioDto;
 import com.example.task_flow.controllers.Dto.CadastroUsuarioDto;
 import com.example.task_flow.entities.Usuario;
 import com.example.task_flow.repository.UsuarioRepository;
@@ -38,5 +39,23 @@ public class UsuarioService {
         return usuario.orElse(null);
     }
 
+    public void atualizarUsuario(Usuario usuario, AtualizarUsuarioDto usuarioDto) {
+        if (usuarioDto.nome().isPresent()) {
+            usuario.setNome(usuarioDto.nome().get());
+        }
+        if (usuarioDto.senhaNova().isPresent()) {
+            var senhaNova = usuarioDto.senhaNova().get();
+            if (usuarioDto.senhaAtual().isPresent()) {
+                var senhaAtual = usuarioDto.senhaAtual().get();
+                if (!usuario.getSenha().equals(senhaAtual)) {
+                    throw new IllegalArgumentException("Senha atual incorreta");
+                }
+                usuario.setSenha(senhaNova);
+            } else {
+                throw new IllegalArgumentException("Senha atual não informada");
+            }
+        }
+        usuarioRepository.save(usuario);
+    }
 
 }
