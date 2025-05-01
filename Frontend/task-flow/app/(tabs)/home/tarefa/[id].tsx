@@ -21,6 +21,7 @@ import excluirTarefa from "@/services/tarefas/deletarTarefa";
 import { VisualizarCategoria } from "@/types/CategoriasInterface";
 import CategoriaComponent from "@/components/categoriaComponent";
 import atualizarCategoriaTarefa from "@/services/tarefas/atualizarCategoriaTarefa";
+import desvincularCategoriaTarefa from "@/services/tarefas/desvincularCategoriaTarefa";
 
 
 export default function VisualizarTarefaPage() {
@@ -147,12 +148,21 @@ export default function VisualizarTarefaPage() {
         }
     }
     
-    async function trocarCategoria(newCategoria: VisualizarCategoria) {
+    async function trocarCategoria(newCategoria: VisualizarCategoria | null) {
         try {
-            const resultado = await atualizarCategoriaTarefa(Number(id), Number(newCategoria.id));
-            if (resultado.status === 200) {
-                console.log("Categoria alterada com sucesso");
-                await carregarTarefa();
+            if (newCategoria === null) {
+                const resultado = await desvincularCategoriaTarefa(Number(id))
+                if (resultado.status === 200) {
+                    console.log("Categoria desvinculada com sucesso");
+                    await carregarTarefa();
+                }
+            } 
+            else {
+                const resultado = await atualizarCategoriaTarefa(Number(id), Number(newCategoria.id));
+                if (resultado.status === 200) {
+                    console.log("Categoria alterada com sucesso");
+                    await carregarTarefa();
+                }
             }
         } catch (error) {
             console.error(error);
@@ -326,7 +336,7 @@ export default function VisualizarTarefaPage() {
                 )}
                 <View style={style.infoContainer}>{tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} isEditable={true} onPrioridadeChange={trocarPrioridade} /> }
                     {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={true} onStatusChange={trocarStatus} /> }
-                    {tarefa?.categoria && <CategoriaComponent categoria={tarefa?.categoria?? null} isEditable={true} onCategoriaChange={trocarCategoria} />}
+                    <CategoriaComponent categoria={tarefa?.categoria?? null} isEditable={true} onCategoriaChange={trocarCategoria} />
                 </View>
                 <Text style={style.descricaoTitle}>Descrição da tarefa</Text>
                 {isEditing ? (

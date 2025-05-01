@@ -47,7 +47,7 @@ const TelaHome = () => {
         }
     
         // Check categoria filter (add null check for tarefa.categoria if it's optional)
-        if (currentFilters.categoria && (!tarefa.categoria || tarefa.categoria !== currentFilters.categoria)) {
+        if (currentFilters.categoria && (!tarefa.categoria?.id || tarefa.categoria?.id !== currentFilters.categoria.id)) {
           return false;
         }
 
