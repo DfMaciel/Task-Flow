@@ -40,13 +40,16 @@ public class UsuarioService {
     }
 
     public void atualizarUsuario(Usuario usuario, AtualizarUsuarioDto usuarioDto) {
+        System.out.println("Atualizando usuário: " + usuarioDto);
         if (usuarioDto.nome().isPresent()) {
             usuario.setNome(usuarioDto.nome().get());
         }
         if (usuarioDto.senhaNova().isPresent()) {
             var senhaNova = usuarioDto.senhaNova().get();
+            System.out.println("Senha nova: " + senhaNova);
             if (usuarioDto.senhaAtual().isPresent()) {
                 var senhaAtual = usuarioDto.senhaAtual().get();
+                System.out.println("Senha atual: " + senhaAtual);
                 if (!usuario.getSenha().equals(senhaAtual)) {
                     throw new IllegalArgumentException("Senha atual incorreta");
                 }
@@ -55,6 +58,7 @@ public class UsuarioService {
                 throw new IllegalArgumentException("Senha atual não informada");
             }
         }
+
         usuarioRepository.save(usuario);
     }
 

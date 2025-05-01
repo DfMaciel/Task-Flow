@@ -3,7 +3,7 @@ import api from "../api";
 
 export default async function buscarUsuario() {
     try {
-        const resposta = await api.get("/usuario/email")
+        const resposta = await api.get("/usuarios/email")
         if (resposta.status === 200) {
             return { status: resposta.status, data: resposta.data };
         } else {

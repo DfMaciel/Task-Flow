@@ -8,9 +8,9 @@ export default function CategoriaComponent({
     isEditable,
     onCategoriaChange
 }: { 
-    categoria: VisualizarCategoria, 
+    categoria: VisualizarCategoria | null, 
     isEditable: boolean,
-    onCategoriaChange?: (newStatus: VisualizarCategoria) => void
+    onCategoriaChange?: (newStatus: VisualizarCategoria | null) => void
  }) {
 
     const [currentCategoria, setCurrentCategoria] = useState<VisualizarCategoria | null>(categoria);
@@ -71,7 +71,7 @@ export default function CategoriaComponent({
             <>
             <TouchableOpacity 
               ref={badgeRef}
-              style={[styles.badge, { backgroundColor: "#6750A4", minWidth: 90 }]}
+              style={[styles.badge, { backgroundColor: "#6750A4", minWidth: 115 }]}
               onPress={handleBadgePress}
             >
             <View style={styles.badgeContent}>
@@ -124,7 +124,7 @@ export default function CategoriaComponent({
                                 onPress={() => {
                                     setCurrentCategoria(null);
                                     setModalVisible(false);
-                                    if (onCategoriaChange) onCategoriaChange(null as any);
+                                    if (onCategoriaChange) onCategoriaChange(null);
                                 }}
                                 >
                                 <Text style={[styles.dropdownItemText, { color: "#888" }]}>
@@ -139,7 +139,7 @@ export default function CategoriaComponent({
             </Modal>
           </>
           ) : (
-            <View style={[styles.badge, { backgroundColor: "#6750A4", minWidth: 90 }]}>
+            <View style={[styles.badge, { backgroundColor: "#6750A4", minWidth: 115 }]}>
               <Text style={styles.badgeText}>
                 {currentCategoria ? currentCategoria.nome : "Sem categoria"}
             </Text>

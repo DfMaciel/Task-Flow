@@ -63,9 +63,10 @@ public class UsuarioController {
         return ResponseEntity.ok(usuario);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping()
     public ResponseEntity<?> atualizarUsuario(Authentication authentication, @RequestBody AtualizarUsuarioDto usuarioDto) {
         String email = (String) authentication.getPrincipal();
+        System.out.println("Recebendo requisição de atualização de usuário: ");
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
         if (usuarioOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Usuário não encontrado");
