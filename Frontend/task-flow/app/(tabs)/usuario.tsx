@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, Alert } from "react-native";
-import { Text, Button, IconButton, Avatar, TextInput, Dialog, Portal, ActivityIndicator } from "react-native-paper";
+import { Text, Button, IconButton, Avatar, TextInput, Dialog, Portal, ActivityIndicator, useTheme } from "react-native-paper";
 import listarCategorias from "@/services/categorias/listarCategorias";
 import { VisualizarCategoria } from "@/types/CategoriasInterface";
 import { useAuth } from "../authcontext";
@@ -10,9 +10,11 @@ import buscarUsuario from "@/services/usuario/buscarUsuario";
 import excluirCategoria from "@/services/categorias/excluirCategoria";
 import adicionarCategorias from "@/services/categorias/adicionarCategoria";
 import atualizarUsuario from "@/services/usuario/atualizarUsuario";
+import { white } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 export default function TelaUsuario() {
   const { logout } = useAuth();
+  const theme = useTheme();
   const [usuario, setUsuario] = useState<VisualizarUsuarioInterface | null>(null);
   const [categorias, setCategorias] = useState<VisualizarCategoria[]>([]);
   const [loading, setLoading] = useState(false);
@@ -170,7 +172,6 @@ export default function TelaUsuario() {
           updatedUserData.senhaNova = novaSenha;
         }
         if (Object.keys(updatedUserData).length > 0 && usuario) {
-          console.log("Dados para atualizar:", updatedUserData);
           await atualizarUsuario(updatedUserData);
 
           if (nameChanged) {
@@ -184,9 +185,9 @@ export default function TelaUsuario() {
           Alert.alert("Sucesso", "Dados atualizados com sucesso.");
           setEditMode(false);
         } else if (!usuario) {
-          setEditError("Erro: Usuário não carregado."); 
+            setEditError("Erro: Usuário não carregado."); 
         } else {
-              setEditMode(false); 
+            setEditMode(false); 
         }
       } catch (error: any) {
         console.error("Erro ao atualizar usuário:", error);
@@ -217,7 +218,7 @@ export default function TelaUsuario() {
           label="Nome"
           value={nome}
           onChangeText={setNome}
-          style={styles.input}
+          style={[styles.input, { backgroundColor: "white" }]}
           editable={editMode} 
           mode="outlined" 
         />
@@ -376,7 +377,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#fff",
   },
   header: {
     alignItems: "center",
@@ -396,8 +396,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#a8a7a7',
     borderRadius: 8,
+    backgroundColor: "#F3F0FA",
   },
   input: {
     marginBottom: 12,
@@ -450,6 +451,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F3F0FA",
+    borderWidth: 1,
+    borderColor: "#a8a7a7",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 16,
