@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 12,
-    backgroundColor: 'transparent',
+    backgroundColor: '#fff',
   },
   passwordSectionTitle: {
     fontSize: 14,
