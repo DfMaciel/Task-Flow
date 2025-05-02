@@ -124,7 +124,8 @@ export default TelaHome;
 
 const styles = StyleSheet.create({
   listContainer: {
-    padding: 16
+    padding: 16,
+    paddingBottom: 80
   },
   container: {
     flex: 1,

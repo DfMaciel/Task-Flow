@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, FlatList, Alert } from "react-native";
+import { View, StyleSheet, FlatList, Alert, ScrollView } from "react-native";
 import { Text, Button, IconButton, Avatar, TextInput, Dialog, Portal, ActivityIndicator, useTheme } from "react-native-paper";
 import listarCategorias from "@/services/categorias/listarCategorias";
 import { VisualizarCategoria } from "@/types/CategoriasInterface";
@@ -207,7 +207,11 @@ export default function TelaUsuario() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scrollView} // Use a style for flex: 1 if needed
+      contentContainerStyle={styles.container} // Apply padding here
+      keyboardShouldPersistTaps="handled" // Good practice for inputs in ScrollView
+    >
       <View style={styles.header}>
         <Avatar.Icon icon="account" size={64} style={styles.avatar} />
           <Text style={styles.userLabel}>Dados do usuário</Text>
@@ -335,6 +339,7 @@ export default function TelaUsuario() {
         }
         refreshing={loading}
         onRefresh={fetchCategorias}
+        scrollEnabled={false} 
       />
       <Button
         icon="plus"
@@ -369,13 +374,15 @@ export default function TelaUsuario() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
+  },
+  container: {
     padding: 24,
   },
   header: {
@@ -444,7 +451,6 @@ const styles = StyleSheet.create({
   },
   categoriaList: {
     flexGrow: 0, 
-    maxHeight: 200, 
     marginBottom: 16,
   },
   categoriaItem: {

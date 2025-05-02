@@ -161,7 +161,12 @@ export default function AdicionarTarefaPage() {
                 open={openPrioridade}
                 value={prioridade}
                 items={prioridadeItens}
-                setOpen={setOpenPrioridade}
+                setOpen={(isOpen) => {
+                    setOpenPrioridade(isOpen);
+                    if (isOpen) {
+                        setOpenCategoria(false); 
+                    }
+                }}
                 setValue={setPrioridade}
                 setItems={setPrioridadeItens}
                 placeholder="Selecione a prioridade"
@@ -175,32 +180,39 @@ export default function AdicionarTarefaPage() {
                 dropDownContainerStyle={[styles.dropdownContainer,
                     { borderColor: tema.colors.primary, borderWidth: 1.5 }
                 ]}
+                zIndex={3000}
+                zIndexInverse={1000} 
             />
             <DropDownPicker
                 open={openCategoria}
                 value={categoria}
                 items={categorias}
-                setOpen={setOpenCategoria}
-                setValue={setPrioridade}
+                setOpen={(isOpen) => {
+                    setOpenCategoria(isOpen); 
+                    if (isOpen) {
+                        setOpenPrioridade(false); 
+                    }
+                }}
+                setValue={setCategoria}
                 setItems={setCategorias}
                 placeholder="Selecione uma categoria"
                 listMode="SCROLLVIEW"
                 tickIconStyle={{ tintColor: tema.colors.primary } as any}
                 style={[
                     styles.dropdown, 
-                    // { borderBottomColor: tema.colors.surface },
-                    prioridadeError? styles.inputError : {}
                 ]}
                 dropDownContainerStyle={[styles.dropdownContainer,
                     { borderColor: tema.colors.primary, borderWidth: 1.5 }
                 ]}
+                zIndex={2000}
+                zIndexInverse={2000}
             />
             <TextInput
                 label="Tempo estimado (horas)"
                 value={tempoEstimado}
                 keyboardType="numeric"
                 onChangeText={setTempoEstimado}
-                style={[styles.input, { marginTop: openPrioridade ? 125 : 7 }]}
+                style={styles.input}
             />
             <Text style={styles.label}>Prazo</Text>
             <View style={styles.dateContainer}>
