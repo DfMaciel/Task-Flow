@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.UUID;
 
 @Component
@@ -41,7 +42,7 @@ public class SalvarArquivo {
             File file = new File(caminhoCompleto);
             arquivo.transferTo(file);
 
-            System.out.println("File saved to: " + caminhoCompleto);
+            System.out.println("Arquivo salvo em: " + caminhoCompleto);
             return caminhoCompleto;
         } catch (IOException ex) {
             ex.printStackTrace();

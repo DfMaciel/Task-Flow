@@ -4,6 +4,8 @@ import com.example.task_flow.controllers.Dto.BaixarAnexoDto;
 import com.example.task_flow.entities.Anexo;
 import com.example.task_flow.entities.Tarefa;
 import com.example.task_flow.repository.AnexoRepository;
+import com.example.task_flow.repository.TarefaRepository;
+import com.example.task_flow.utils.ExcluirArquivo;
 import com.example.task_flow.utils.SalvarArquivo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -23,7 +25,13 @@ public class AnexoService {
     private AnexoRepository anexoRepository;
 
     @Autowired
+    private TarefaRepository tarefaRepository;
+
+    @Autowired
     private SalvarArquivo salvarArquivo;
+
+    @Autowired
+    private ExcluirArquivo excluirArquivo;
 
     public Anexo salvarAnexo(MultipartFile arquivo, Tarefa tarefa, Long usuarioId) {
         try {
@@ -61,5 +69,14 @@ public class AnexoService {
             return null;
         }
         return new BaixarAnexoDto(resource, anexo.getNome());
+    }
+
+    public void deletarAnexo(Anexo anexo) {
+        Path caminho = Paths.get(anexo.getCaminho());
+        excluirArquivo.excluir(caminho);
+        anexo.getTarefa().getAnexos().remove(anexo);
+        tarefaRepository.save(anexo.getTarefa());
+        anexo.setTarefa(null);
+        anexoRepository.delete(anexo);
     }
 }
