@@ -2,6 +2,7 @@ package com.example.task_flow.services;
 
 import com.example.task_flow.controllers.Dto.AtualizarTarefaDto;
 import com.example.task_flow.controllers.Dto.CadastroTarefaDto;
+import com.example.task_flow.entities.Anexo;
 import com.example.task_flow.entities.Categoria;
 import com.example.task_flow.entities.Tarefa;
 import com.example.task_flow.entities.Usuario;
@@ -12,7 +13,9 @@ import com.example.task_flow.utils.VerificadorData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +31,9 @@ public class TarefaService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private AnexoService anexoService;
 
     @Autowired
     private VerificadorData verificadorData;
@@ -70,6 +76,16 @@ public class TarefaService {
         System.out.println("Tarefa" + tarefa);
         Tarefa tarefaSalva = tarefaRepository.save(tarefa);
         return tarefaSalva.getId();
+    }
+
+    public void adicionarAnexoTarefa(Tarefa tarefa, MultipartFile anexo) {
+        try {
+            Anexo anexoSalvo = anexoService.salvarAnexo(anexo, tarefa, tarefa.getUsuario().getId());
+            tarefa.getAnexos().add(anexoSalvo);
+            tarefaRepository.save(tarefa);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao salvar o anexo: " + e.getMessage());
+        }
     }
 
     public void atualizarTarefa(Tarefa tarefa, AtualizarTarefaDto atualizarTarefaDto) {

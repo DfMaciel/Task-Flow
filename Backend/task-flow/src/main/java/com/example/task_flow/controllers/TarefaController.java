@@ -6,12 +6,14 @@ import com.example.task_flow.entities.Tarefa;
 import com.example.task_flow.entities.Usuario;
 import com.example.task_flow.repository.TarefaRepository;
 import com.example.task_flow.repository.UsuarioRepository;
+import com.example.task_flow.services.AnexoService;
 import com.example.task_flow.services.TarefaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
@@ -24,6 +26,9 @@ public class TarefaController {
 
     @Autowired
     private TarefaService tarefaService;
+
+    @Autowired
+    private AnexoService anexoService;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -63,6 +68,29 @@ public class TarefaController {
         try {
             var tarefaId = tarefaService.cadastrarTarefa(usuarioOptional.get(), cadastroTarefaDto);
             return ResponseEntity.created(URI.create("/tarefas/" + tarefaId.toString())).body("Tarefa cadastrado");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/anexo/{tarefaId}")
+    public ResponseEntity<?> adicionarAnexo(Authentication authentication, @PathVariable Long tarefaId, @RequestParam("file") MultipartFile file) {
+        String email = (String) authentication.getPrincipal();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Optional<Tarefa> tarefaOptional = tarefaRepository.findById(tarefaId);
+        if (tarefaOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Tarefa não encontrada");
+        }
+        Tarefa tarefa = tarefaOptional.get();
+        if (!tarefa.getUsuario().equals(usuarioOptional.get())) {
+            return ResponseEntity.status(403).body("Usuário não tem permissão para adicionar anexo na tarefa");
+        }
+        try {
+            anexoService.salvarAnexo(file, tarefa, usuarioOptional.get().getId());
+            return ResponseEntity.ok("Anexo adicionado");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

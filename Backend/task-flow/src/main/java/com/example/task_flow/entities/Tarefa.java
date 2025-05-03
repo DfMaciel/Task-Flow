@@ -46,8 +46,9 @@ public class Tarefa {
     @OneToMany(mappedBy = "tarefa", cascade = CascadeType.ALL)
     private List<Nota> notas;
 
-//    @OneToMany(mappedBy = "tarefa")
-//    private List<Anexo> anexos;
+    @OneToMany(mappedBy = "tarefa", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"tarefa"})
+    private List<Anexo> anexos;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
@@ -251,5 +252,13 @@ public class Tarefa {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public List<Anexo> getAnexos() {
+        return this.anexos;
+    }
+
+    public void setAnexos(List<Anexo> anexos) {
+        this.anexos = anexos;
     }
 }
