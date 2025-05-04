@@ -49,9 +49,12 @@ public class TarefaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarTarefa(@PathVariable("id") Long id) {
+    public ResponseEntity<?> buscarTarefa(@PathVariable("id") Long id, @RequestHeader("Host") String host) {
         try {
             Tarefa tarefa = tarefaService.buscarTarefa(id);
+            if (tarefa == null) {
+                return ResponseEntity.notFound().build();
+            }
             return ResponseEntity.ok(tarefa);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(e.getMessage());

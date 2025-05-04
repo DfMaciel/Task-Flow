@@ -1,5 +1,6 @@
 package com.example.task_flow.services;
 
+import com.example.task_flow.controllers.Dto.AnexoDto;
 import com.example.task_flow.controllers.Dto.BaixarAnexoDto;
 import com.example.task_flow.entities.Anexo;
 import com.example.task_flow.entities.Tarefa;
@@ -10,6 +11,7 @@ import com.example.task_flow.utils.SalvarArquivo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,17 +60,19 @@ public class AnexoService {
         return anexoRepository.findById(id).orElse(null);
     }
 
-    public BaixarAnexoDto baixarAnexo(Long id) throws MalformedURLException {
+    public AnexoDto baixarAnexo(Long id) throws MalformedURLException {
         Anexo anexo = anexoRepository.findById(id).orElse(null);
         if (anexo == null) {
             return null;
         }
+        System.out.println("Anexo encontrado: " + anexo);
         Path caminho = Paths.get(anexo.getCaminho());
         Resource resource = new UrlResource(caminho.toUri());
+        MediaType mediaType = MediaType.parseMediaType(anexo.getTipo());
         if (!resource.exists()) {
             return null;
         }
-        return new BaixarAnexoDto(resource, anexo.getNome());
+        return new AnexoDto(resource, anexo.getNome(), mediaType);
     }
 
     public void deletarAnexo(Anexo anexo) {

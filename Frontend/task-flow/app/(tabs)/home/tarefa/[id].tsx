@@ -22,6 +22,7 @@ import { VisualizarCategoria } from "@/types/CategoriasInterface";
 import CategoriaComponent from "@/components/categoriaComponent";
 import atualizarCategoriaTarefa from "@/services/tarefas/atualizarCategoriaTarefa";
 import desvincularCategoriaTarefa from "@/services/tarefas/desvincularCategoriaTarefa";
+import AnexoComponent from "@/components/anexoComponent";
 
 
 export default function VisualizarTarefaPage() {
@@ -364,17 +365,29 @@ export default function VisualizarTarefaPage() {
                 )}
                 
                 <Text style={[style.descricaoTitle, { marginTop: 10}]}>Anexos</Text>
-                {/* <View>
-                     <TouchableOpacity 
-                        style={style.addAnexoButton}
-                        onPress={() => {}}
-                        >
-                        <View style={style.addAnexoContent}>
-                            <Icon source="plus-circle-outline" size={20} color="#6750A4" />
-                            <Text style={style.adicionarTitle}>Adicionar novo anexo</Text>
+                <FlatList
+                    data={tarefa?.anexos || []}
+                    renderItem={({ item }) => <AnexoComponent anexo={item} />}
+                    keyExtractor={(item) => item.id.toString()}
+                    horizontal={true} // Display horizontally
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={style.anexoListContainer}
+                    ListEmptyComponent={
+                        <View style={style.emptyAnexosContainer}>
+                            <Icon source="paperclip" size={20} color="#9e9e9e" />
+                            <Text style={style.emptyAnexosText}>Nenhum anexo adicionado</Text>
                         </View>
-                    </TouchableOpacity>
-                </View> */}
+                    }
+                />
+                <TouchableOpacity 
+                    style={style.addAnexoButton}
+                    onPress={() => {}}
+                    >
+                    <View style={style.addAnexoContent}>
+                        <Icon source="plus-circle-outline" size={20} color="#6750A4" />
+                        <Text style={style.adicionarTitle}>Adicionar novo anexo</Text>
+                    </View>
+                </TouchableOpacity>
                 <View style={style.adicionarNotaTitle}>
                     <Text style={style.descricaoTitle}>Notas</Text>
                     <Text onPress={() => setModalVisible(true)} style={style.lerMais}>
@@ -563,6 +576,29 @@ const style = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
         paddingBottom: 8,
+    },
+    anexoListContainer: {
+        paddingVertical: 10,
+    },
+    anexoItemContainer: { // General container for spacing if needed
+        marginRight: 10,
+        alignItems: 'center',
+        width: 100, // Fixed width for items
+    },
+    emptyAnexosContainer: {
+        height: 100, // Match item height
+        width: 200, // Make it wider to fit text
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+    },
+    emptyAnexosText: {
+        fontSize: 14,
+        color: '#9e9e9e',
+        marginLeft: 8,
     },
     addAnexoButton: {
         backgroundColor: '#f0e7fd', 

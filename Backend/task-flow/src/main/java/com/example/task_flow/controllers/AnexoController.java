@@ -1,6 +1,6 @@
 package com.example.task_flow.controllers;
 
-import com.example.task_flow.controllers.Dto.BaixarAnexoDto;
+import com.example.task_flow.controllers.Dto.AnexoDto;
 import com.example.task_flow.entities.Anexo;
 import com.example.task_flow.entities.Usuario;
 import com.example.task_flow.repository.UsuarioRepository;
@@ -42,8 +42,9 @@ public class AnexoController {
         return ResponseEntity.ok(anexo);
     }
 
-    @GetMapping("/download/{id}")
-    public ResponseEntity<?> downloadAnexo(Authentication authentication, @PathVariable Long id) {
+    @GetMapping("/visualizar/{id}")
+    public ResponseEntity<?> visualizarAnexo(Authentication authentication, @PathVariable Long id) {
+        System.out.println("Recebendo requisição pra visualizar");
         Anexo anexo = anexoService.buscarAnexo(id);
         if (anexo == null) {
             return ResponseEntity.notFound().build();
@@ -58,12 +59,45 @@ public class AnexoController {
             return ResponseEntity.status(403).body("Usuário não tem acesso à esse anexo!");
         }
         try {
-            BaixarAnexoDto baixarAnexo = anexoService.baixarAnexo(anexo.getId());
+            AnexoDto baixarAnexo = anexoService.baixarAnexo(anexo.getId());
             if (baixarAnexo == null) {
                 return ResponseEntity.notFound().build();
             }
 
             return ResponseEntity.ok()
+                    .contentType(baixarAnexo.mediaType())
+                    .body(baixarAnexo.resource());
+        }  catch (MalformedURLException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao visualizar o anexo: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/download/{id}")
+    public ResponseEntity<?> downloadAnexo(Authentication authentication, @PathVariable Long id) {
+        System.out.println("Recebendo requisição pra baixar");
+        Anexo anexo = anexoService.buscarAnexo(id);
+        if (anexo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        String email = (String) authentication.getPrincipal();
+        Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Long usuarioId = anexo.getTarefa().getUsuario().getId();
+        if (!usuario.getId().equals(usuarioId)) {
+            return ResponseEntity.status(403).body("Usuário não tem acesso à esse anexo!");
+        }
+        try {
+            AnexoDto baixarAnexo = anexoService.baixarAnexo(anexo.getId());
+            if (baixarAnexo == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(baixarAnexo.mediaType())
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baixarAnexo.nome() + "\"")
                     .body(baixarAnexo.resource());
         }  catch (MalformedURLException e) {

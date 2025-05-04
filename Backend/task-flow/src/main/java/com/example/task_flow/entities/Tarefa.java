@@ -1,11 +1,15 @@
 package com.example.task_flow.entities;
 
+import com.example.task_flow.controllers.Dto.BaixarAnexoDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "tarefas")
@@ -47,7 +51,8 @@ public class Tarefa {
     private List<Nota> notas;
 
     @OneToMany(mappedBy = "tarefa", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties({"tarefa"})
+//    @JsonIgnoreProperties({"tarefa"})
+    @JsonIgnore
     private List<Anexo> anexos;
 
     @ManyToOne
@@ -59,6 +64,20 @@ public class Tarefa {
     @JoinColumn(name = "categoria_id")
     @JsonIgnoreProperties({"tarefas", "usuario"})
     private Categoria categoria;
+
+    @JsonProperty("anexos")
+    public List<BaixarAnexoDto> getAnexosDto() {
+        return anexos.stream()
+            .map(anexo -> new BaixarAnexoDto(
+                    anexo.getId(),
+                    anexo.getNome(),
+                    anexo.getTipo(),
+                    anexo.getTamanho(),
+                    "/anexos/visualizar/" + anexo.getId(),
+                    "/anexos/download/" + anexo.getId()
+            ))
+            .collect(Collectors.toList());
+    }
 
     public Tarefa() {
     }

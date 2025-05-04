@@ -1,3 +1,4 @@
+import { VisualizarAnexo } from "./AnexoInterface";
 import { VisualizarCategoria } from "./CategoriasInterface";
 import { VisualizarNota } from "./NotasInterface";
 
@@ -14,6 +15,7 @@ export interface VisualizarTarefa {
     prioridade: string;
     tempoEstimado?: string;
     notas: VisualizarNota[];
+    anexos: VisualizarAnexo[];
 }
 
 export interface CriarTarefa {
