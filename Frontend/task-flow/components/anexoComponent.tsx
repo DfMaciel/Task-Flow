@@ -3,21 +3,17 @@ import Constants from 'expo-constants';
 import { useState, useEffect } from "react";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View, Modal } from "react-native";
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View, Modal, Pressable, PressableStateCallbackType } from "react-native";
 import { ActivityIndicator, IconButton } from "react-native-paper";
-import { useAuth } from "@/app/authcontext";
 import api from "@/services/api";
 
-export default function AnexoComponent({ anexo }: { anexo: VisualizarAnexo }) {
+export default function AnexoComponent({ anexo, onDelete }: { anexo: VisualizarAnexo, onDelete: (id: number, nome: string) => void }) {
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     
     const [isDownloading, setIsDownloading] = useState(false);
     const [base64Data, setBase64Data] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
-    
-    const auth = useAuth();
-    const token = auth.userToken;
     
     const { SERVER_ROUTE } = Constants.expoConfig?.extra || {};
     const urlConteudo = `${SERVER_ROUTE}${anexo.urlConteudo}`; 
@@ -39,7 +35,7 @@ export default function AnexoComponent({ anexo }: { anexo: VisualizarAnexo }) {
             console.log('Carregando áudio');
             setIsDownloading(true);
             try {
-                const res = await api.get(anexo.urlBaixar, { responseType: "blob" });
+                const res = await api.get(urlBaixar, { responseType: "blob" });
                 const blob = res.data as Blob;
                 const reader = new FileReader();
                 reader.onloadend = async () => {
@@ -95,13 +91,6 @@ export default function AnexoComponent({ anexo }: { anexo: VisualizarAnexo }) {
                 setIsDownloading(false);
             };
             reader.readAsDataURL(blob);
-            
-            // Optional: Share the downloaded file
-            // if (await Sharing.isAvailableAsync()) {
-            //     await Sharing.shareAsync(downloadedUri);
-            // } else {
-            //     Alert.alert('Compartilhamento não disponível');
-            // }
 
         } catch (error) {
             console.error('Erro de download:', error);
@@ -124,7 +113,7 @@ export default function AnexoComponent({ anexo }: { anexo: VisualizarAnexo }) {
         if (isImagem) {
             (async () => {
                 try {
-                  const res = await api.get(anexo.urlConteudo, {
+                  const res = await api.get(urlConteudo, {
                     responseType: 'blob',
                   });
                   const blob = res.data as Blob;
@@ -138,57 +127,101 @@ export default function AnexoComponent({ anexo }: { anexo: VisualizarAnexo }) {
                 }
               })();
             }
-          }, [anexo.urlConteudo]);
+          }, [urlConteudo]);
+          
+    const handlePress = () => {
+        if (isImagem) {
+            setShowModal(true);
+        } else if (isAudio) {
+            handleAudioPlayback();
+        }
+    }
+
+    const handleLongPress = () => {
+        Alert.alert(
+            "Remover anexo",
+            `Deseja remover "${anexo.nome}"?`,
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Remover",
+                    style: "destructive",
+                    onPress: () => onDelete(anexo.id, anexo.nome) 
+                }
+            ]
+        );
+    };
 
       return (
-        <View style={styles.itemContainer}>
-            {isImagem && base64Data ? (
-            <>
-                <TouchableOpacity onPress={() => setShowModal(true)}>
+        <Pressable
+            onPress={handlePress}
+            onLongPress={handleLongPress}
+            delayLongPress={500}
+        >
+            {({ pressed }: PressableStateCallbackType) => (
+            <View style={[styles.itemContainer, pressed && styles.itemContainerPressed]}>
+                {isImagem && base64Data ? (
+                <>
                     <Image
                     source={{ uri: `data:${anexo.tipo};base64,${base64Data}` }}
                     style={styles.thumbnail}
                     />
-                </TouchableOpacity>
 
-                <Modal visible={showModal} transparent onRequestClose={() => setShowModal(false)}>
-                    <View style={styles.modalOverlay}>
-                    <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowModal(false)} />
-                    <Image
-                        source={{ uri: `data:${anexo.tipo};base64,${base64Data}` }}
-                        style={styles.expandedImage}
-                        resizeMode="contain"
+                    <Modal 
+                        visible={showModal} 
+                        transparent 
+                        onRequestClose={() => setShowModal(false)}
+                        animationType="fade"
+                    >
+                        <TouchableOpacity
+                            style={styles.modalOverlay}
+                            activeOpacity={1}
+                            onPressOut={() => setShowModal(false)} 
+                        >
+                            <View 
+                                onStartShouldSetResponder={() => true} 
+                                onResponderRelease={(e) => e.stopPropagation()}
+                                style={styles.modalContentContainer}
+                            >
+                                <Image
+                                    source={{ uri: `data:${anexo.tipo};base64,${base64Data}` }}
+                                    style={styles.expandedImage}
+                                    resizeMode="contain"
+                                />
+                            </View>
+                        </TouchableOpacity>
+                    </Modal>
+                    </>
+                ) : isImagem && !base64Data ? (
+                    <ActivityIndicator size="small" color="#000" />
+                ) : isAudio ? (
+                    <IconButton
+                    icon={isPlaying ? "pause-circle" : "play-circle"}
+                    size={40}
+                    disabled={isDownloading}
+                    style={styles.sound}
                     />
-                    </View>
-                </Modal>
-                </>
-            ) : isImagem && !base64Data ? (
-                <ActivityIndicator size="small" color="#000" />
-            ) : isAudio ? (
+                ) : (
+                    <IconButton icon="file-outline" size={40} disabled />
+                )}
+
+                <Text numberOfLines={1}>
+                    {anexo.nome}
+                </Text>
+
                 <IconButton
-                icon={isPlaying ? "pause-circle" : "play-circle"}
-                size={40}
-                onPress={handleAudioPlayback}
-                disabled={isDownloading}
+                    icon="download"
+                    size={20}
+                    iconColor="#6750A4"
+                    accessibilityLabel="Baixar" 
+                    onPress={handleDownload}
+                    disabled={isDownloading}
+                    style={styles.downloadButton}
                 />
-            ) : (
-                <IconButton icon="file-outline" size={40} disabled />
+                {isDownloading && <Text style={styles.downloadingText}>Baixando...</Text>}
+            </View>
             )}
-
-            <Text numberOfLines={1}>
-                {anexo.nome}
-            </Text>
-
-            <IconButton
-                icon="download"
-                size={20}
-                iconColor="#007AFF" 
-                onPress={handleDownload}
-                disabled={isDownloading}
-                style={styles.downloadButton}
-            />
-             {isDownloading && <Text style={styles.downloadingText}>Baixando...</Text>}
-        </View>
+        </Pressable>
       );
 };
 
@@ -196,15 +229,12 @@ const styles = StyleSheet.create({
     itemContainer: {
         marginRight: 10,
         alignItems: 'center',
-        width: 120, // Adjust width as needed
-        position: 'relative', // For positioning download text/indicator
+        width: 120, 
+        position: 'relative',
     },
-    anexoImage: {
-        width: 100,
-        height: 100,
+    itemContainerPressed: { 
+        backgroundColor: 'rgba(0, 0, 0, 0.1)', 
         borderRadius: 8,
-        backgroundColor: '#e0e0e0',
-        marginBottom: 4,
     },
     thumbnail: { 
         width: 100, 
@@ -212,38 +242,13 @@ const styles = StyleSheet.create({
         borderRadius: 8, 
         backgroundColor: "#eee" 
     },
-    audioContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 8,
-        backgroundColor: '#f0e7fd',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-     otherFileContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 8,
-        backgroundColor: '#eee',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    anexoFilename: {
-        fontSize: 12,
-        color: '#555',
-        textAlign: 'center',
-        marginTop: 4,
-        marginBottom: 2,
+    sound: { 
+        width: 100, 
+        height: 87, 
     },
     downloadButton: {
-        // position: 'absolute', // Optional: Position over the preview
-        // top: 5,
-        // right: 5,
-        // backgroundColor: 'rgba(255,255,255,0.7)',
-        margin: 0, // Reset margin if using IconButton default
-        padding: 0, // Reset padding
+        margin: 0, 
+        padding: 0,
     },
     downloadingText: {
         fontSize: 10,
@@ -255,8 +260,14 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center"
       },
+    modalContentContainer: {
+        width: "90%",
+        height: "60%", 
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     expandedImage: { 
         width: "90%", 
-        height: "80%" 
+        height: "100%" 
     }
 });

@@ -13,7 +13,7 @@ import formatPrazo from "@/utils/dateTimeParser";
 import { useNavigation } from "expo-router";
 import { useLocalSearchParams, useRouter, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform } from "react-native";
+import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert } from "react-native";
 import { Icon, IconButton, TextInput } from "react-native-paper";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import atualizarTarefa from "@/services/tarefas/atualizarTarefa";
@@ -23,6 +23,7 @@ import CategoriaComponent from "@/components/categoriaComponent";
 import atualizarCategoriaTarefa from "@/services/tarefas/atualizarCategoriaTarefa";
 import desvincularCategoriaTarefa from "@/services/tarefas/desvincularCategoriaTarefa";
 import AnexoComponent from "@/components/anexoComponent";
+import excluirAnexo from "@/services/anexos/excluirAnexo";
 
 
 export default function VisualizarTarefaPage() {
@@ -241,6 +242,18 @@ export default function VisualizarTarefaPage() {
         }
     }
     
+    const handleExcluirAnexo = async (id: number, nome: string) => {
+        try {
+            const resultado = await excluirAnexo(id);
+            Alert.alert("Removido", `"${nome}" foi excluído.`);
+        } catch (error) {
+            console.error("Erro ao excluir:", error);
+            Alert.alert("Erro", "Não foi possível excluir o anexo.");
+        } finally {
+            await carregarTarefa();
+        }
+      };
+    
     return (
         <View style={{ flex: 1}}>
             <ScrollView 
@@ -367,7 +380,7 @@ export default function VisualizarTarefaPage() {
                 <Text style={[style.descricaoTitle, { marginTop: 10}]}>Anexos</Text>
                 <FlatList
                     data={tarefa?.anexos || []}
-                    renderItem={({ item }) => <AnexoComponent anexo={item} />}
+                    renderItem={({ item }) => <AnexoComponent anexo={item} onDelete={handleExcluirAnexo} />}
                     keyExtractor={(item) => item.id.toString()}
                     horizontal={true} // Display horizontally
                     showsHorizontalScrollIndicator={false}
