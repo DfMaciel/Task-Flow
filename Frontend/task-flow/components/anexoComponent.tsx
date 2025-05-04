@@ -37,30 +37,39 @@ export default function AnexoComponent({ anexo }: { anexo: VisualizarAnexo }) {
             }
         } else {
             console.log('Carregando áudio');
+            setIsDownloading(true);
             try {
-                const { sound: newSound } = await Audio.Sound.createAsync(
-                   { uri: urlConteudo,
-                    //  headers: { Authorization: `Bearer ${token}` } 
-                    } 
-                );
-                setSound(newSound);
-                console.log('Tocando áudio');
-                await newSound.playAsync();
-                setIsPlaying(true);
+                const res = await api.get(anexo.urlBaixar, { responseType: "blob" });
+                const blob = res.data as Blob;
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64 = (reader.result as string).split(",")[1];
+                    const safeName = `audio_${anexo.id}.mp3`;
+                    const localUri = FileSystem.documentDirectory + safeName;
+                    await FileSystem.writeAsStringAsync(localUri, base64, {
+                    encoding: FileSystem.EncodingType.Base64,
+                    });
 
-                newSound.setOnPlaybackStatusUpdate((status) => {
-                    if (status.isLoaded && status.didJustFinish) {
-                        setIsPlaying(false);
-                        // Optionally unload or rewind
-                        // newSound.setPositionAsync(0);
-                    }
-                });
-
-            } catch (error) {
-                console.error("Erro tocando/carregando o áudio:", error);
-                alert("Não foi possível carregar o áudio.");
+                    const { sound: newSound } = await Audio.Sound.createAsync(
+                    { uri: localUri },
+                    { shouldPlay: true }
+                    );
+                    setSound(newSound);
+                    setIsPlaying(true);
+                    newSound.setOnPlaybackStatusUpdate((status) => {
+                        if (status.isLoaded && status.didJustFinish) {
+                          setIsPlaying(false);
+                        }
+                    });
+                };
+                reader.readAsDataURL(blob);
+            } catch (err) {
+                console.error("Erro ao baixar/tocar áudio:", err);
+                Alert.alert("Erro", "Não foi possível tocar o áudio.");
+            } finally {
+                setIsDownloading(false);
             }
-        }
+        };
     };
 
     const handleDownload = async () => {
