@@ -196,6 +196,11 @@ export default function AdicionarTarefaPage() {
                 setValue={setCategoria}
                 setItems={setCategorias}
                 placeholder="Selecione uma categoria"
+                ListEmptyComponent={() => (
+                    <Text style={{ padding: 10, textAlign: 'center' }}>
+                        Nenhuma categoria encontrada
+                    </Text>
+                )}
                 listMode="SCROLLVIEW"
                 tickIconStyle={{ tintColor: tema.colors.primary } as any}
                 style={[
