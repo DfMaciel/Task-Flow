@@ -48,6 +48,7 @@ public class Tarefa {
     private String tempoEstimado;
 
     @OneToMany(mappedBy = "tarefa", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"tarefa"})
     private List<Nota> notas;
 
     @OneToMany(mappedBy = "tarefa", cascade = CascadeType.ALL)

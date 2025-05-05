@@ -101,6 +101,6 @@ public class Nota {
     }
 
     public String toString() {
-        return "Nota(id=" + this.getId() + ", conteudo=" + this.getConteudo() + ", dataCriacao=" + this.getDataCriacao() + ", tarefa=" + this.getTarefa() + ")";
+        return "Nota(id=" + this.getId() + ", conteudo=" + this.getConteudo() + ", dataCriacao=" + this.getDataCriacao() + ")";
     }
 }
