@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,18 +67,42 @@ public class Tarefa {
     @JsonIgnoreProperties({"tarefas", "usuario"})
     private Categoria categoria;
 
+    @OneToMany(mappedBy = "tarefaPai", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"usuario", "subTarefas", "anexos", "notas", "categoria", "tarefaPai"})
+    public List<Tarefa> subTarefas;
+
+    @ManyToOne
+    @JoinColumn(name = "tarefa_pai_id")
+    @JsonIgnoreProperties({"usuario", "subTarefas", "anexos", "notas", "categoria", "tarefaPai"})
+    public Tarefa tarefaPai;
+
     @JsonProperty("anexos")
     public List<BaixarAnexoDto> getAnexosDto() {
         return anexos.stream()
-            .map(anexo -> new BaixarAnexoDto(
-                    anexo.getId(),
-                    anexo.getNome(),
-                    anexo.getTipo(),
-                    anexo.getTamanho(),
-                    "/anexos/visualizar/" + anexo.getId(),
-                    "/anexos/download/" + anexo.getId()
-            ))
-            .collect(Collectors.toList());
+                .map(anexo -> new BaixarAnexoDto(
+                        anexo.getId(),
+                        anexo.getNome(),
+                        anexo.getTipo(),
+                        anexo.getTamanho(),
+                        "/anexos/visualizar/" + anexo.getId(),
+                        "/anexos/download/" + anexo.getId()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public void adicionarSubTarefa(Tarefa subTarefa) {
+        if (this.subTarefas == null) {
+            this.subTarefas = new ArrayList<>();
+        }
+        subTarefa.setTarefaPai(this);
+        this.subTarefas.add(subTarefa);
+    }
+
+    public void removerSubTarefa(Tarefa subTarefa) {
+        if (this.subTarefas != null) {
+            this.subTarefas.remove(subTarefa);
+            subTarefa.setTarefaPai(null);
+        }
     }
 
     public Tarefa() {
@@ -280,5 +305,23 @@ public class Tarefa {
 
     public void setAnexos(List<Anexo> anexos) {
         this.anexos = anexos;
+    }
+
+    public List<Tarefa> getSubTarefas() {
+        return this.subTarefas;
+    }
+
+    public Tarefa getTarefaPai() {
+        return this.tarefaPai;
+    }
+
+    @JsonIgnoreProperties({"usuario", "subTarefas", "anexos", "notas", "categoria"})
+    public void setSubTarefas(List<Tarefa> subTarefas) {
+        this.subTarefas = subTarefas;
+    }
+
+    @JsonIgnoreProperties({"usuario", "subTarefas", "anexos", "notas", "categoria", "tarefaPai"})
+    public void setTarefaPai(Tarefa tarefaPai) {
+        this.tarefaPai = tarefaPai;
     }
 }

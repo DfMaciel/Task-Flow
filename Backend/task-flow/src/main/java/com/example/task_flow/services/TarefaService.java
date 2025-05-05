@@ -74,6 +74,20 @@ public class TarefaService {
         LocalDateTime dataAtual = LocalDateTime.now();
         tarefa.setDataCriacao(dataAtual);
         System.out.println("Tarefa" + tarefa);
+        tarefaRepository.save(tarefa);
+        if (cadastroTarefaDto.idTarefaPai().isPresent()) {
+            Optional<Tarefa> tarefaPaiOptional = tarefaRepository.findById(cadastroTarefaDto.idTarefaPai().get());
+            if (tarefaPaiOptional.isEmpty()) {
+                throw new IllegalArgumentException("Tarefa pai não encontrada");
+            }
+            Tarefa tarefaPai = tarefaPaiOptional.get();
+            if (!usuario.equals(tarefaPai.getUsuario())) {
+                throw new IllegalArgumentException("Usuário não tem permissão para cadastrar a tarefa nesta tarefa pai");
+            }
+            tarefa.setTarefaPai(tarefaPai);
+            tarefaPai.getSubTarefas().add(tarefa);
+            tarefaRepository.save(tarefaPai);
+        }
         Tarefa tarefaSalva = tarefaRepository.save(tarefa);
         return tarefaSalva.getId();
     }
@@ -161,6 +175,20 @@ public class TarefaService {
     public void desvincularCategoriaTarefa(Tarefa tarefa) {
         tarefa.setCategoria(null);
         tarefaRepository.save(tarefa);
+    }
+
+    public void vincularTarefas(Tarefa tarefaPai, Tarefa tarefaFilho) {
+        tarefaFilho.setTarefaPai(tarefaPai);
+        tarefaPai.getSubTarefas().add(tarefaFilho);
+        tarefaRepository.save(tarefaPai);
+        tarefaRepository.save(tarefaFilho);
+    }
+
+    public void desvincularTarefas(Tarefa tarefaPai, Tarefa tarefaFilho) {
+        tarefaFilho.setTarefaPai(null);
+        tarefaPai.getSubTarefas().remove(tarefaFilho);
+        tarefaRepository.save(tarefaPai);
+        tarefaRepository.save(tarefaFilho);
     }
 
     public void deletarTarefa(Long id) {

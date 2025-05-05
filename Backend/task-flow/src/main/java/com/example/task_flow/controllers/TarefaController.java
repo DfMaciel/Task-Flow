@@ -49,7 +49,7 @@ public class TarefaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarTarefa(@PathVariable("id") Long id, @RequestHeader("Host") String host) {
+    public ResponseEntity<?> buscarTarefa(@PathVariable("id") Long id) {
         try {
             Tarefa tarefa = tarefaService.buscarTarefa(id);
             if (tarefa == null) {
@@ -218,6 +218,62 @@ public class TarefaController {
         try {
             tarefaService.desvincularCategoriaTarefa(tarefa);
             return ResponseEntity.ok("Categoria da tarefa removida");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/vincular/{tarefaPai}/subTarefa/{tarefaFilho}")
+    public ResponseEntity<?> vincularTarefas(Authentication authentication, @PathVariable("tarefaPai") Long tarefaPaiId, @PathVariable("tarefaFilho") Long tarefaFilhoId) {
+        String email = (String) authentication.getPrincipal();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Optional<Tarefa> tarefaPaiOptional = tarefaRepository.findById(tarefaPaiId);
+        if (tarefaPaiOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Tarefa pai não encontrada");
+        }
+        Optional<Tarefa> tarefaFilhoOptional = tarefaRepository.findById(tarefaFilhoId);
+        if (tarefaFilhoOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Tarefa filho não encontrada");
+        }
+        Tarefa tarefaPai = tarefaPaiOptional.get();
+        Tarefa tarefaFilho = tarefaFilhoOptional.get();
+        if (!tarefaPai.getUsuario().equals(usuarioOptional.get()) || !tarefaFilho.getUsuario().equals(usuarioOptional.get())) {
+            return ResponseEntity.status(403).body("Usuário não tem permissão para vincular as tarefas");
+        }
+        try {
+            tarefaService.vincularTarefas(tarefaPai, tarefaFilho);
+            return ResponseEntity.ok("Tarefas vinculadas");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/desvincular/{tarefaPai}/subTarefa/{tarefaFilho}")
+    public ResponseEntity<?> desvincularTarefas(Authentication authentication, @PathVariable("tarefaPai") Long tarefaPaiId, @PathVariable("tarefaFilho") Long tarefaFilhoId) {
+        String email = (String) authentication.getPrincipal();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+        Optional<Tarefa> tarefaPaiOptional = tarefaRepository.findById(tarefaPaiId);
+        if (tarefaPaiOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Tarefa pai não encontrada");
+        }
+        Optional<Tarefa> tarefaFilhoOptional = tarefaRepository.findById(tarefaFilhoId);
+        if (tarefaFilhoOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Tarefa filho não encontrada");
+        }
+        Tarefa tarefaPai = tarefaPaiOptional.get();
+        Tarefa tarefaFilho = tarefaFilhoOptional.get();
+        if (!tarefaPai.getUsuario().equals(usuarioOptional.get()) || !tarefaFilho.getUsuario().equals(usuarioOptional.get())) {
+            return ResponseEntity.status(403).body("Usuário não tem permissão para desvincular as tarefas");
+        }
+        try {
+            tarefaService.desvincularTarefas(tarefaPai, tarefaFilho);
+            return ResponseEntity.ok("Tarefas desvinculadas");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -11,6 +11,7 @@ public record CadastroTarefaDto(
         @NotEmpty String prioridade,
         Optional<String> tempoEstimado,
         Optional<LocalDate> prazo,
-        Optional<Long> idCategoria
+        Optional<Long> idCategoria,
+        Optional<Long> idTarefaPai
 ) {
 }
