@@ -127,6 +127,9 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
                 await gravacao.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
                 await gravacao.startAsync();
                 setGravando(gravacao);
+                console.log("Gravação iniciada:", gravacao.getURI());   
+                closeMenu();
+      
             } else {
                 await gravando.stopAndUnloadAsync();
                 const uri = gravando.getURI()!;
@@ -154,6 +157,14 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
             // closeMenu();
         }
     };
+
+    const handleMainButtonPress = () => {
+        if (gravando) {
+            handleGravarAudio();
+        } else {
+            openMenu();
+        }
+    };
     
     return (
         <Menu
@@ -161,12 +172,25 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
             onDismiss={closeMenu}
             anchor={
                 <TouchableOpacity 
-                style={style.addAnexoButton}
-                onPress={openMenu} 
+                    style={[
+                        style.addAnexoButton,
+                        gravando && style.addAnexoButtonRecording
+                    ]}
+                    onPress={handleMainButtonPress} 
                 >
                 <View style={style.addAnexoContent}>
-                    <Icon source="plus-circle-outline" size={20} color="#6750A4" />
-                    <Text style={style.adicionarTitle}>Adicionar novo anexo</Text>
+                    <Icon 
+                        source={gravando ? "stop-circle-outline" : "plus-circle-outline"} 
+                        size={20} 
+                        color="#6750A4"
+                    />
+                    <Text 
+                        style={[
+                            style.adicionarTitle,
+                            gravando && style.adicionarTitleRecording 
+                        ]}>
+                            {gravando ? "Parar Gravação" : "Adicionar novo anexo"}
+                        </Text>
                 </View>
             </TouchableOpacity>
             }
@@ -187,10 +211,10 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
                 title="Escolher Áudio"
             />
             <Menu.Item
-                leadingIcon={gravando ? "stop-circle-outline" : "record-circle-outline"}
+                leadingIcon={"record-circle-outline"}
                 onPress={handleGravarAudio} 
-                title={gravando ? 'Parar Gravação' : 'Gravar Áudio'}
-                titleStyle={gravando ? { color: 'red' } : {}}
+                title={'Gravar Áudio'}
+                disabled={!!gravando}
             />
         </Menu>
       );
@@ -205,16 +229,26 @@ const style = StyleSheet.create ({
         borderStyle: 'dashed',
         borderWidth: 1,
         borderColor: '#6750A4',
+        transitionProperty: 'background-color, border-color',
+        transitionDuration: '0.3s',
+    },
+    addAnexoButtonRecording: {
+        backgroundColor: '#ffebee',
+        borderColor: '#FF0000',
     },
     addAnexoContent: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        color: "#6750A4"
     },
     adicionarTitle: {
         fontSize: 15,
         marginLeft: 8,
         fontWeight: "bold",
         color: "purple"
+    },
+    adicionarTitleRecording: {
+        color: "#FF0000",
     },
 });
