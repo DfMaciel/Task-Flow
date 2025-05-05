@@ -21,7 +21,6 @@ const TelaHome = () => {
   });
   
     async function carregarTarefas() {
-      console.log("Buscando tarefas")
       try {
         const resposta = await ListarTarefas();
         setTarefas(resposta.data);

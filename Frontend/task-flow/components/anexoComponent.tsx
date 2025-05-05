@@ -32,7 +32,6 @@ export default function AnexoComponent({ anexo, onDelete }: { anexo: VisualizarA
                 setIsPlaying(true);
             }
         } else {
-            console.log('Carregando áudio');
             setIsDownloading(true);
             try {
                 const res = await api.get(urlBaixar, { responseType: "blob" });
@@ -103,7 +102,6 @@ export default function AnexoComponent({ anexo, onDelete }: { anexo: VisualizarA
     useEffect(() => {
         return sound
           ? () => {
-              console.log('Unloading Sound');
               sound.unloadAsync();
             }
           : undefined;

@@ -26,7 +26,6 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
     const handleAdicionarAnexo = async (uri: string, name: string, tipo: string) => {
         try {
             const resultado = await adicionarAnexo(id, uri, name, tipo);
-            console.log("Anexo adicionado successfully:", resultado);
             Alert.alert('Sucesso', 'Anexo adicionado.');
             carregarTarefa();
         } catch (error) {
@@ -42,19 +41,16 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
             if (!granted) 
                 return Alert.alert('Permissão necessária', 'Acesso à galeria negado');
             const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'] });
-            console.log("ImagePicker result:", JSON.stringify(result, null, 2)); 
 
             if (result.canceled) 
                 return;
             
             if (!result.assets || result.assets.length === 0) {
-                console.error("ImagePicker success but no assets found.");
                 return Alert.alert('Erro', 'Não foi possível obter a imagem selecionada.');
             }
             const asset = result.assets[0];
             const fileName = asset.fileName ?? `image_${Date.now()}.jpg`;
             const fileType = asset.mimeType ?? `${asset.type}/${asset.uri.split('.').pop()}`;
-            console.log(`Image selected: Name=${fileName}, Type=${fileType}, URI=${asset.uri}`);
             await handleAdicionarAnexo(asset.uri, fileName, fileType);
         }
         catch (error) {
@@ -69,20 +65,17 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
             if (!granted) 
                 return Alert.alert('Permissão necessária', 'Acesso à câmera negado');
             const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'] });
-            console.log("ImagePicker result:", JSON.stringify(result, null, 2)); 
 
             if (result.canceled) 
                 return;
 
             if (!result.assets || result.assets.length === 0) {
-                console.error("ImagePicker success but no assets found.");
                 return Alert.alert('Erro', 'Não foi possível obter a imagem capturada.');
             }
 
             const asset = result.assets[0];
             const fileName = asset.fileName ?? `image_${Date.now()}.jpg`;
             const fileType = asset.mimeType ?? `${asset.type}/${asset.uri.split('.').pop()}`;
-            console.log(`Photo taken: Name=${fileName}, Type=${fileType}, URI=${asset.uri}`);
             await handleAdicionarAnexo(asset.uri, fileName, fileType);
         } catch (error) {
             console.error("Error in handleTirarFoto:", error);
@@ -93,7 +86,6 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
     const handleEscolherAudio = async () => {
         try {
             const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*' });
-            console.log("DocumentPicker result:", JSON.stringify(result, null, 2));
 
             if (result.canceled) {
                 return;
@@ -104,7 +96,6 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
                 const name = asset.name;
                 const mimeType = asset.mimeType ?? 'audio/mpeg';
 
-                console.log(`Audio selected: Name=${name}, Type=${mimeType}, URI=${uri}`);
                 await handleAdicionarAnexo(uri, name, mimeType);
             }
             else {
@@ -127,7 +118,6 @@ export default function AdicionarAnexoComponent({id, carregarTarefa}: props) {
                 await gravacao.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
                 await gravacao.startAsync();
                 setGravando(gravacao);
-                console.log("Gravação iniciada:", gravacao.getURI());   
                 closeMenu();
       
             } else {

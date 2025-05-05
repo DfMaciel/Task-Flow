@@ -130,7 +130,6 @@ export default function VisualizarTarefaPage() {
         try {
             const resultado = await atualizarStatusTarefa(Number(id), newStatus);
             if (resultado.status === 200) {
-                console.log("Status alterado com sucesso");
                 await carregarTarefa();
             }
         } catch (error) {
