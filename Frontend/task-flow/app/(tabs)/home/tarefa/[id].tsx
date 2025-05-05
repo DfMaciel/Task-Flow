@@ -10,8 +10,7 @@ import { VisualizarNota } from "@/types/NotasInterface";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
 import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
-import { useNavigation } from "expo-router";
-import { useLocalSearchParams, useRouter, useSearchParams } from "expo-router/build/hooks";
+import { useRouter, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert } from "react-native";
 import { Icon, IconButton, TextInput } from "react-native-paper";
@@ -24,6 +23,7 @@ import atualizarCategoriaTarefa from "@/services/tarefas/atualizarCategoriaTaref
 import desvincularCategoriaTarefa from "@/services/tarefas/desvincularCategoriaTarefa";
 import AnexoComponent from "@/components/anexoComponent";
 import excluirAnexo from "@/services/anexos/excluirAnexo";
+import AdicionarAnexoComponent from "@/components/adicionarAnexoComponent";
 
 
 export default function VisualizarTarefaPage() {
@@ -382,7 +382,7 @@ export default function VisualizarTarefaPage() {
                     data={tarefa?.anexos || []}
                     renderItem={({ item }) => <AnexoComponent anexo={item} onDelete={handleExcluirAnexo} />}
                     keyExtractor={(item) => item.id.toString()}
-                    horizontal={true} // Display horizontally
+                    horizontal={true} 
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={style.anexoListContainer}
                     ListEmptyComponent={
@@ -392,15 +392,7 @@ export default function VisualizarTarefaPage() {
                         </View>
                     }
                 />
-                <TouchableOpacity 
-                    style={style.addAnexoButton}
-                    onPress={() => {}}
-                    >
-                    <View style={style.addAnexoContent}>
-                        <Icon source="plus-circle-outline" size={20} color="#6750A4" />
-                        <Text style={style.adicionarTitle}>Adicionar novo anexo</Text>
-                    </View>
-                </TouchableOpacity>
+                <AdicionarAnexoComponent id={Number(id)} carregarTarefa={carregarTarefa}/>
                 <View style={style.adicionarNotaTitle}>
                     <Text style={style.descricaoTitle}>Notas</Text>
                     <Text onPress={() => setModalVisible(true)} style={style.lerMais}>
@@ -593,18 +585,17 @@ const style = StyleSheet.create({
     anexoListContainer: {
         paddingVertical: 10,
     },
-    anexoItemContainer: { // General container for spacing if needed
+    anexoItemContainer: { 
         marginRight: 10,
         alignItems: 'center',
-        width: 100, // Fixed width for items
+        width: 100, 
     },
     emptyAnexosContainer: {
-        height: 100, // Match item height
-        width: 200, // Make it wider to fit text
+        height: 50, 
+        width: 200, 
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
         borderRadius: 8,
         paddingHorizontal: 15,
     },
