@@ -16,6 +16,8 @@ export interface VisualizarTarefa {
     tempoEstimado?: string;
     notas: VisualizarNota[];
     anexos: VisualizarAnexo[];
+    subTarefas: VisualizarTarefa[];
+    tarefaPai?: VisualizarTarefa;
 }
 
 export interface CriarTarefa {

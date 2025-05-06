@@ -7,6 +7,8 @@ import adicionarTarefas from "@/services/tarefas/adicionarTarefas";
 import DialogErrorComponent from "@/components/dialogErrorComponent";
 import { VisualizarCategoria } from "@/types/CategoriasInterface";
 import listarCategorias from "@/services/categorias/listarCategorias";
+import ListarTarefas from "@/services/tarefas/listarTarefasService";
+import { VisualizarTarefa } from "@/types/TarefaInteface";
 
 export default function AdicionarTarefaPage() {
     const [titulo, setTitulo] = useState("");
@@ -34,6 +36,10 @@ export default function AdicionarTarefaPage() {
     const [categorias, setCategorias] = useState<{ label: string; value: number }[]>([]);
     const [categoria, setCategoria] = useState<number | null>(null);
 
+    const [openTarefa, setOpenTarefa] = useState(false);
+    const [tarefas, setTarefas] = useState<{ label: string; value: number }[]>([]);
+    const [tarefaEscolhida, setTarefaEscolhida] = useState<number | null>(null);
+
     const onChangePrazo = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || prazo;
         setShowDatePicker(Platform.OS === 'ios');
@@ -54,7 +60,23 @@ export default function AdicionarTarefaPage() {
                 setCategorias([]);
             }
         }
+        async function fetchTarefas() {
+            try {
+                const resposta = await ListarTarefas()
+                setTarefas(
+                    resposta.data.map((tarefa: VisualizarTarefa) => ({
+                        label: tarefa.titulo,
+                        value: tarefa.id,
+                    }))
+                )
+            }
+            catch (error) {
+                console.error(error)
+                setTarefas([])
+            }
+        }
         fetchCategorias();
+        fetchTarefas();
     }
     , []);
 
@@ -86,6 +108,7 @@ export default function AdicionarTarefaPage() {
                 prioridade,
                 tempoEstimado: tempoEstimado ? Number(tempoEstimado) : null,
                 idCategoria: categoria ? Number(categoria) : null,
+                idTarefaPai: tarefaEscolhida ? Number(tarefaEscolhida) : null,
                 prazo: prazo.toISOString().split('T')[0],
             };
 
@@ -240,6 +263,41 @@ export default function AdicionarTarefaPage() {
                     minimumDate={new Date()}
                 />
             )}
+            <DropDownPicker
+                open={openTarefa}
+                value={tarefaEscolhida}
+                items={tarefas}
+                setOpen={(isOpen) => {
+                    setOpenTarefa(isOpen); 
+                    if (isOpen) {
+                        setOpenCategoria(false);
+                        setOpenPrioridade(false); 
+                    }
+                }}
+                setValue={setTarefaEscolhida}
+                setItems={setTarefas}
+                placeholder="Tarefa relacionada"
+                ListEmptyComponent={() => (
+                    <Text style={{ padding: 10, textAlign: 'center' }}>
+                        Nenhuma tarefa encontrada
+                    </Text>
+                )}
+                listMode="SCROLLVIEW"
+                tickIconStyle={{ tintColor: tema.colors.primary } as any}
+                style={[
+                    styles.dropdown, 
+                ]}
+                dropDownContainerStyle={[styles.dropdownContainer,
+                    { borderColor: tema.colors.primary, borderWidth: 1.5 }
+                ]}
+                zIndex={1000}
+                zIndexInverse={3000}
+                searchable={true}
+                searchPlaceholder="Pesquisar tarefa"
+                searchNoResultsText="Nenhuma tarefa encontrada"
+                searchTextInputStyle={{ color: tema.colors.primary }}
+                searchContainerStyle={{ backgroundColor: tema.colors.surface }}
+            />
             <Button
                 mode="contained"
                 style={styles.button}

@@ -12,8 +12,8 @@ import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
 import { useRouter, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Button, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert } from "react-native";
-import { Icon, IconButton, TextInput } from "react-native-paper";
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert } from "react-native";
+import { Icon, IconButton, TextInput, Button } from "react-native-paper";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import atualizarTarefa from "@/services/tarefas/atualizarTarefa";
 import excluirTarefa from "@/services/tarefas/deletarTarefa";
@@ -24,6 +24,7 @@ import desvincularCategoriaTarefa from "@/services/tarefas/desvincularCategoriaT
 import AnexoComponent from "@/components/anexoComponent";
 import excluirAnexo from "@/services/anexos/excluirAnexo";
 import AdicionarAnexoComponent from "@/components/adicionarAnexoComponent";
+import SubTarefasComponent from "@/components/subTarefasComponent";
 
 
 export default function VisualizarTarefaPage() {
@@ -252,6 +253,10 @@ export default function VisualizarTarefaPage() {
             await carregarTarefa();
         }
       };
+
+    const handleNavegarSubTarefa = (id: number) => {
+        router.push(`/home/tarefa/${id}`);
+    }
     
     return (
         <View style={{ flex: 1}}>
@@ -375,6 +380,36 @@ export default function VisualizarTarefaPage() {
                         )}
                     </Text>
                 )}
+                
+                <View style={style.subtarefaHeader}>
+                    <Text style={style.descricaoTitle}>Sub-Tarefas</Text>
+                    {/* Add Button */}
+                    {!isEditing && (
+                         <Button
+                            icon="plus"
+                            mode="text"
+                            onPress={() => router.push(`/home/tarefa/${tarefa?.id}/sub-tarefa`)}
+                            compact
+                            labelStyle={style.addButtonLabel}
+                        >
+                            Adicionar
+                        </Button>
+                    )}
+                </View>
+                <FlatList
+                    data={tarefa?.subTarefas || []}
+                    renderItem={({ item }) => (
+                        <SubTarefasComponent item={item} onPress={handleNavegarSubTarefa}/>
+                    )}
+                    keyExtractor={(item) => item.id.toString()}
+                    showsHorizontalScrollIndicator={false}
+                    ListEmptyComponent={
+                        <View style={style.emptyListContainer}>
+                            <Icon source="subdirectory-arrow-right" size={20} color="#9e9e9e" />
+                            <Text style={style.emptyListText}>Nenhuma sub-tarefa adicionada</Text>
+                        </View>
+                    }
+                />
                 
                 <Text style={[style.descricaoTitle, { marginTop: 10}]}>Anexos</Text>
                 <FlatList
@@ -569,6 +604,35 @@ const style = StyleSheet.create({
     lerMais: {
         color: "purple",
         fontWeight: "bold",
+    },
+    subtarefaHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 5,
+        marginTop: 10, 
+    },
+    addButtonLabel: {
+        fontSize: 14,
+        marginHorizontal: 0,
+    },
+    emptyListContainer: {
+        height: 60,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        marginVertical: 10,
+    },
+    emptyListText: {
+        fontSize: 14,
+        color: '#9e9e9e',
+        marginLeft: 8,
+    },
+    separator: {
+        height: 8, 
     },
     notasContainer: {
         marginTop: 8,

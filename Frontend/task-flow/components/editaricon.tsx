@@ -61,7 +61,7 @@ type EditarFABProps = {
   const styles = StyleSheet.create({
     container: {
       position: 'absolute',
-      bottom: 16,
+      bottom: 25,
       right: 16,
       zIndex: 999,
     },
