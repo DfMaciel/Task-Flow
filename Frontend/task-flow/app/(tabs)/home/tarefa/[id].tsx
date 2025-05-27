@@ -12,7 +12,7 @@ import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
 import { useRouter, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert } from "react-native";
+import { View, Text, SectionList, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert } from "react-native";
 import { Icon, IconButton, TextInput, Button } from "react-native-paper";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import atualizarTarefa from "@/services/tarefas/atualizarTarefa";
@@ -51,6 +51,35 @@ export default function VisualizarTarefaPage() {
     const [showInicioPicker, setShowInicioPicker] = useState(false);
     const [showConclusaoPicker, setShowConclusaoPicker] = useState(false);
     const [showCategoriaPicker, setShowCategoriaPicker] = useState(false);
+
+    const secoes = [    {
+      title: "Sub-Tarefas",
+      button:
+        <> {!isEditing && (
+            <Button
+            icon="plus"
+            mode="text"
+            onPress={() => router.push(`/home/tarefa/${tarefa?.id}/sub-tarefa`)}
+            compact
+            labelStyle={style.addButtonLabel}
+        >
+            Adicionar
+        </Button>
+        )}</>,
+      data: tarefa?.subTarefas || [],
+      renderItem: ({ item }) => (
+        <SubTarefasComponent item={item} onPress={handleNavegarSubTarefa} />
+      ),
+    },
+    {
+      title: "Anexos",
+      data: tarefa?.anexos || [],
+      horizontal: true,
+      renderItem: ({ item }) => (
+        <AnexoComponent anexo={item} onDelete={handleExcluirAnexo} />
+      ),
+    },
+  ];
 
     const router = useRouter()
 
@@ -381,9 +410,9 @@ export default function VisualizarTarefaPage() {
                     </Text>
                 )}
                 
-                <View style={style.subtarefaHeader}>
+                {/* <View style={style.subtarefaHeader}>
                     <Text style={style.descricaoTitle}>Sub-Tarefas</Text>
-                    {/* Add Button */}
+                    {/* Add Button 
                     {!isEditing && (
                          <Button
                             icon="plus"
@@ -403,6 +432,7 @@ export default function VisualizarTarefaPage() {
                     )}
                     keyExtractor={(item) => item.id.toString()}
                     showsHorizontalScrollIndicator={false}
+                    nestedScrollEnabled={true}
                     ListEmptyComponent={
                         <View style={style.emptyListContainer}>
                             <Icon source="subdirectory-arrow-right" size={20} color="#9e9e9e" />
@@ -423,6 +453,19 @@ export default function VisualizarTarefaPage() {
                         <View style={style.emptyAnexosContainer}>
                             <Icon source="paperclip" size={20} color="#9e9e9e" />
                             <Text style={style.emptyAnexosText}>Nenhum anexo adicionado</Text>
+                        </View>
+                    }
+                /> */}
+                <SectionList
+                    sections={secoes}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderSectionHeader={({ section: { title } }) => (
+                        <Text style={style.descricaoTitle}>{title}</Text>
+                    )}
+                    renderItem={({ item, section }) => section.renderItem({ item })}
+                    ListEmptyComponent={
+                        <View style={style.emptyListContainer}>
+                        <Text style={style.emptyListText}>Nenhum item encontrado</Text>
                         </View>
                     }
                 />
@@ -617,14 +660,17 @@ const style = StyleSheet.create({
         marginHorizontal: 0,
     },
     emptyListContainer: {
-        height: 60,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        marginVertical: 10,
+        // height: 60,
+        // flexDirection: 'row',
+        // alignItems: 'center',
+        // justifyContent: 'center',
+        // backgroundColor: '#f5f5f5',
+        // borderRadius: 8,
+        // paddingHorizontal: 15,
+        // marginVertical: 10,
+        padding: 20,
+        alignItems: "center",
+        justifyContent: "center",
     },
     emptyListText: {
         fontSize: 14,
@@ -756,4 +802,19 @@ const style = StyleSheet.create({
         color: "white",
         fontWeight: "bold",
     },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginTop: 20,
+        marginBottom: 10,
+    },
+    // emptyListContainer: {
+    //     alignItems: "center",
+    //     justifyContent: "center",
+    //     padding: 20,
+    // },
+    // emptyListText: {
+    //     fontSize: 16,
+    //     color: "#9e9e9e",
+    // },
 });
