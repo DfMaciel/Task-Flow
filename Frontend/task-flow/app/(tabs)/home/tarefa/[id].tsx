@@ -25,6 +25,7 @@ import AnexoComponent from "@/components/anexoComponent";
 import excluirAnexo from "@/services/anexos/excluirAnexo";
 import AdicionarAnexoComponent from "@/components/adicionarAnexoComponent";
 import SubTarefasComponent from "@/components/subTarefasComponent";
+import desvincularSubTarefa from "@/services/tarefas/desvincularSubTarefa";
 
 
 export default function VisualizarTarefaPage() {
@@ -51,35 +52,6 @@ export default function VisualizarTarefaPage() {
     const [showInicioPicker, setShowInicioPicker] = useState(false);
     const [showConclusaoPicker, setShowConclusaoPicker] = useState(false);
     const [showCategoriaPicker, setShowCategoriaPicker] = useState(false);
-
-    const secoes = [    {
-      title: "Sub-Tarefas",
-      button:
-        <> {!isEditing && (
-            <Button
-            icon="plus"
-            mode="text"
-            onPress={() => router.push(`/home/tarefa/${tarefa?.id}/sub-tarefa`)}
-            compact
-            labelStyle={style.addButtonLabel}
-        >
-            Adicionar
-        </Button>
-        )}</>,
-      data: tarefa?.subTarefas || [],
-      renderItem: ({ item }) => (
-        <SubTarefasComponent item={item} onPress={handleNavegarSubTarefa} />
-      ),
-    },
-    {
-      title: "Anexos",
-      data: tarefa?.anexos || [],
-      horizontal: true,
-      renderItem: ({ item }) => (
-        <AnexoComponent anexo={item} onDelete={handleExcluirAnexo} />
-      ),
-    },
-  ];
 
     const router = useRouter()
 
@@ -144,7 +116,7 @@ export default function VisualizarTarefaPage() {
 
     useEffect(() => {
         carregarTarefa();
-    }, []);
+    }, [id]);
     
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -284,8 +256,38 @@ export default function VisualizarTarefaPage() {
       };
 
     const handleNavegarSubTarefa = (id: number) => {
+        setTarefa(undefined)
         router.push(`/home/tarefa/${id}`);
     }
+
+    const handleDesvincularSubTarefa = async (subTarefa: number) => {
+            Alert.alert(
+                "Desvincular Sub-Tarefa",
+                "Você tem certeza que deseja desvincular esta sub-tarefa?",
+                [
+                    {
+                        text: "Cancelar",
+                        style: "cancel"
+                    },
+                    {
+                        text: "Desvincular",
+                        style: "destructive",
+                        onPress: async () => {
+                            try {
+                            const resposta = await desvincularSubTarefa(Number(id), subTarefa);
+                            if (resposta.status === 200) {
+                                console.log("Sub-tarefa desvinculada com sucesso");
+                                await carregarTarefa();
+                            }
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    };
     
     return (
         <View style={{ flex: 1}}>
@@ -410,14 +412,13 @@ export default function VisualizarTarefaPage() {
                     </Text>
                 )}
                 
-                {/* <View style={style.subtarefaHeader}>
+                <View style={style.subtarefaHeader}>
                     <Text style={style.descricaoTitle}>Sub-Tarefas</Text>
-                    {/* Add Button 
                     {!isEditing && (
                          <Button
                             icon="plus"
                             mode="text"
-                            onPress={() => router.push(`/home/tarefa/${tarefa?.id}/sub-tarefa`)}
+                            onPress={() => router.push(`/home/adicionarTarefa?id=${id}`)}
                             compact
                             labelStyle={style.addButtonLabel}
                         >
@@ -428,11 +429,12 @@ export default function VisualizarTarefaPage() {
                 <FlatList
                     data={tarefa?.subTarefas || []}
                     renderItem={({ item }) => (
-                        <SubTarefasComponent item={item} onPress={handleNavegarSubTarefa}/>
+                        <SubTarefasComponent item={item} onPress={handleNavegarSubTarefa} handleDesvincular={handleDesvincularSubTarefa}/>
                     )}
                     keyExtractor={(item) => item.id.toString()}
                     showsHorizontalScrollIndicator={false}
                     nestedScrollEnabled={true}
+                    scrollEnabled={false}
                     ListEmptyComponent={
                         <View style={style.emptyListContainer}>
                             <Icon source="subdirectory-arrow-right" size={20} color="#9e9e9e" />
@@ -453,19 +455,6 @@ export default function VisualizarTarefaPage() {
                         <View style={style.emptyAnexosContainer}>
                             <Icon source="paperclip" size={20} color="#9e9e9e" />
                             <Text style={style.emptyAnexosText}>Nenhum anexo adicionado</Text>
-                        </View>
-                    }
-                /> */}
-                <SectionList
-                    sections={secoes}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderSectionHeader={({ section: { title } }) => (
-                        <Text style={style.descricaoTitle}>{title}</Text>
-                    )}
-                    renderItem={({ item, section }) => section.renderItem({ item })}
-                    ListEmptyComponent={
-                        <View style={style.emptyListContainer}>
-                        <Text style={style.emptyListText}>Nenhum item encontrado</Text>
                         </View>
                     }
                 />

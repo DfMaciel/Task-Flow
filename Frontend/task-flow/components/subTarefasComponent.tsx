@@ -7,9 +7,10 @@ import { useRouter } from "expo-router"
 type props = {
     item: VisualizarTarefa
     onPress: (id: number) => void
+    handleDesvincular?: (id: number) => void
 }
 
-export default function SubTarefasComponent({item, onPress}: props) {
+export default function SubTarefasComponent({item, onPress, handleDesvincular}: props) {
     const router = useRouter()
 
     return (
@@ -30,8 +31,9 @@ export default function SubTarefasComponent({item, onPress}: props) {
                 icon="link-off"
                 size={20}
                 iconColor="red"
-                onPress={() => {}}
+                onPress={() => {handleDesvincular && handleDesvincular(item.id)}}
                 style={styles.desvincularButton}
+                disabled={!handleDesvincular}
             />
         </TouchableOpacity>
     )

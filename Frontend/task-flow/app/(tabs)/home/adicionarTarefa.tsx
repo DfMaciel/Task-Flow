@@ -9,6 +9,7 @@ import { VisualizarCategoria } from "@/types/CategoriasInterface";
 import listarCategorias from "@/services/categorias/listarCategorias";
 import ListarTarefas from "@/services/tarefas/listarTarefasService";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
+import { useSearchParams } from "expo-router/build/hooks";
 
 export default function AdicionarTarefaPage() {
     const [titulo, setTitulo] = useState("");
@@ -39,6 +40,14 @@ export default function AdicionarTarefaPage() {
     const [openTarefa, setOpenTarefa] = useState(false);
     const [tarefas, setTarefas] = useState<{ label: string; value: number }[]>([]);
     const [tarefaEscolhida, setTarefaEscolhida] = useState<number | null>(null);
+    
+    const searchParams= useSearchParams();
+    const id = searchParams.get("id");
+    useEffect(() => {
+        if (id) {
+            setTarefaEscolhida(Number(id));
+            }
+        }, [id]);
 
     const onChangePrazo = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || prazo;
