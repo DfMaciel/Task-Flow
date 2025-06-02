@@ -26,6 +26,8 @@ import excluirAnexo from "@/services/anexos/excluirAnexo";
 import AdicionarAnexoComponent from "@/components/adicionarAnexoComponent";
 import SubTarefasComponent from "@/components/subTarefasComponent";
 import desvincularSubTarefa from "@/services/tarefas/desvincularSubTarefa";
+import vincularSubTarefa from "@/services/tarefas/vincularSubTarefa";
+import AdicionarSubTarefaComponent from "@/components/adicionarSubTarefaComponent";
 
 
 export default function VisualizarTarefaPage() {
@@ -288,6 +290,18 @@ export default function VisualizarTarefaPage() {
             { cancelable: true }
         );
     };
+
+    const handleVincularSubTarefa = async (subTarefa: number) => {
+        try {
+            const resposta = await vincularSubTarefa(Number(id), subTarefa);
+            if (resposta.status === 200) {
+                console.log("Sub-tarefa vinculada com sucesso");
+                await carregarTarefa();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
     
     return (
         <View style={{ flex: 1}}>
@@ -414,16 +428,12 @@ export default function VisualizarTarefaPage() {
                 
                 <View style={style.subtarefaHeader}>
                     <Text style={style.descricaoTitle}>Sub-Tarefas</Text>
-                    {!isEditing && (
-                         <Button
-                            icon="plus"
-                            mode="text"
-                            onPress={() => router.push(`/home/adicionarTarefa?id=${id}`)}
-                            compact
-                            labelStyle={style.addButtonLabel}
-                        >
-                            Adicionar
-                        </Button>
+                    {tarefa && !isEditing &&(
+                         <AdicionarSubTarefaComponent 
+                            tarefaPai={tarefa}
+                            carregarTarefa={carregarTarefa} 
+                            handleVincularSubTarefa={handleVincularSubTarefa}
+                        ></AdicionarSubTarefaComponent>
                     )}
                 </View>
                 <FlatList
@@ -643,10 +653,6 @@ const style = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 5,
         marginTop: 10, 
-    },
-    addButtonLabel: {
-        fontSize: 14,
-        marginHorizontal: 0,
     },
     emptyListContainer: {
         // height: 60,

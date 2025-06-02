@@ -1,9 +1,7 @@
 package com.example.task_flow.entities;
 
 import com.example.task_flow.controllers.Dto.BaixarAnexoDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -68,11 +66,13 @@ public class Tarefa {
     private Categoria categoria;
 
     @OneToMany(mappedBy = "tarefaPai", cascade = CascadeType.ALL)
+    @JsonManagedReference
     @JsonIgnoreProperties({"usuario", "subTarefas", "anexos", "notas", "categoria", "tarefaPai"})
     public List<Tarefa> subTarefas;
 
     @ManyToOne
     @JoinColumn(name = "tarefa_pai_id")
+//    @JsonBackReference
     @JsonIgnoreProperties({"usuario", "subTarefas", "anexos", "notas", "categoria", "tarefaPai"})
     public Tarefa tarefaPai;
 
