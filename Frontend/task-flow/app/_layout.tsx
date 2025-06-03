@@ -3,6 +3,7 @@ import AuthProvider,{ useAuth } from "./authcontext";
 import { useEffect } from "react";
 import { authEmitter } from "@/services/authEmiter";
 import { PaperProvider } from "react-native-paper";
+import * as Notifications from "expo-notifications";
 
 function ProtectedLayout() {
   const { userToken, loading } = useAuth();
@@ -40,6 +41,7 @@ function ProtectedLayout() {
     }
 
     prepareApp();
+    configurarNotificacoes();
   }, [userToken, segments, loading, router]);
 
   useEffect(() => {
@@ -52,6 +54,17 @@ function ProtectedLayout() {
     };
   }, [router]);
   
+  async function configurarNotificacoes() {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== "granted") {
+      const { status: newStatus } = await Notifications.requestPermissionsAsync();
+      if (newStatus !== "granted") {
+        console.warn("Permissão de notificações não concedida");
+        return;
+      }
+    }
+  }
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
