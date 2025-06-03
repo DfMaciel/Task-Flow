@@ -291,8 +291,38 @@ export default function VisualizarTarefaPage() {
         );
     };
 
+    const handleDesvincularTarefaPai = async (tarefaPai: number) => {
+            Alert.alert(
+                "Desvincular Tarefa-Pai",
+                "Você tem certeza que deseja desvincular esta tarefa-pai?",
+                [
+                    {
+                        text: "Cancelar",
+                        style: "cancel"
+                    },
+                    {
+                        text: "Desvincular",
+                        style: "destructive",
+                        onPress: async () => {
+                            try {
+                            const resposta = await desvincularSubTarefa(tarefaPai, Number(id));
+                            if (resposta.status === 200) {
+                                console.log("Tarefa-Pai desvinculada com sucesso");
+                                await carregarTarefa();
+                            }
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    };
+
     const handleVincularSubTarefa = async (subTarefa: number) => {
         try {
+            console.log('passou direto')
             const resposta = await vincularSubTarefa(Number(id), subTarefa);
             if (resposta.status === 200) {
                 console.log("Sub-tarefa vinculada com sucesso");
@@ -300,6 +330,64 @@ export default function VisualizarTarefaPage() {
             }
         } catch (error) {
             console.error(error);
+        }
+    }
+    
+    const handleVincularTarefaPai = async (tarefaPai: number) => {
+        let tarefaPaiId = tarefa?.tarefaPai?.id 
+        if (tarefaPaiId) {
+            console.log('parou no if')
+            Alert.alert(
+                "Tarefa-Pai já vinculada",
+                "Essa tarefa já possui uma tarefa-pai vinculada. Deseja desvincular a tarefa-pai atual e vincular uma nova?",
+                [
+                    {
+                        text: "Cancelar",
+                        style: "cancel"
+                    },
+                    {
+                        text: "Desvincular e Vincular",
+                        style: "destructive",
+                        onPress: async () => {
+                            try {
+                                const desvincularResposta = await desvincularSubTarefa(tarefaPaiId, Number(id));
+
+                                if (desvincularResposta.status !== 200) {
+                                    console.error("Erro ao desvincular:", desvincularResposta);
+                                    Alert.alert("Erro na Desvinculação", "Não foi possível desvincular da tarefa pai atual. A nova vinculação não será tentada.");
+                                    await carregarTarefa(); 
+                                    return; 
+                                }
+                                
+                                const vincularResposta = await vincularSubTarefa(tarefaPai, Number(id));
+                                if (vincularResposta.status === 200) {
+                                    Alert.alert("Sucesso", "Tarefa pai atualizada com sucesso!");
+                                } else {
+                                    console.error("Erro ao vincular", vincularResposta);
+                                    Alert.alert("Erro na Vinculação", "Desvinculada da tarefa pai anterior, mas não foi possível vincular à nova tarefa pai.");
+                                }
+                                await carregarTarefa();
+                            } catch (error) {
+                                console.error("Erro ao substituir tarefa pai:", error);
+                                Alert.alert("Erro", `Ocorreu um erro durante a substituição: ${error instanceof Error ? error.message : String(error)}`);
+                                await carregarTarefa(); 
+                            }
+                        }
+                    }
+                ],
+                { cancelable: true }
+            );
+        } else {
+            console.log('passou direto')
+            try {
+                const resposta = await vincularSubTarefa(tarefaPai, Number(id));
+                if (resposta.status === 200) {
+                    console.log("Tarefa-pai vinculada com sucesso");
+                    await carregarTarefa();
+                }
+            } catch (error) {
+                console.error(error);
+            }
         }
     }
     
@@ -425,6 +513,26 @@ export default function VisualizarTarefaPage() {
                         )}
                     </Text>
                 )}
+                
+                <View style={style.subtarefaHeader}>
+                    <Text style={style.descricaoTitle}>Tarefa-Pai</Text>
+                    {tarefa && !isEditing &&(
+                         <AdicionarSubTarefaComponent 
+                            tarefaPai={tarefa}
+                            carregarTarefa={carregarTarefa} 
+                            handleVincularSubTarefa={handleVincularTarefaPai}
+                            escolherTarefaPai={true}
+                        ></AdicionarSubTarefaComponent>
+                    )}
+                </View>
+                { tarefa?.tarefaPai ? (
+                        <SubTarefasComponent item={tarefa?.tarefaPai} onPress={handleNavegarSubTarefa} handleDesvincular={handleDesvincularTarefaPai}/>
+                    ) : (
+                        <View style={style.emptyListContainer}>
+                            <Icon source="subdirectory-arrow-right" size={20} color="#9e9e9e" />
+                            <Text style={style.emptyListText}>Essa tarefa não possui uma tarefa-pai</Text>
+                        </View>
+                    )}
                 
                 <View style={style.subtarefaHeader}>
                     <Text style={style.descricaoTitle}>Sub-Tarefas</Text>

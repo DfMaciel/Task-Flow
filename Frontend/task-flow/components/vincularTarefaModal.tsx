@@ -34,6 +34,7 @@ export default function VincularTarefaModal(props: Props) {
 
         if (props.visible) {
             fetchTarefas();
+            console.log(props.tarefaPai.tarefaPai);
         } else {
             setTarefas([]);
             setSearchQuery('');
@@ -48,11 +49,12 @@ export default function VincularTarefaModal(props: Props) {
             if (tarefa.id === props.tarefaPai.id) {
                 return false; 
             }
+
             if (props.tarefaPai.subTarefas && props.tarefaPai.subTarefas.some(sub => sub.id === tarefa.id)) {
                 return false; 
             }
             
-            if (props.tarefaPai.tarefaPai?.id && tarefa.tarefaPai?.id === props.tarefaPai.id) {
+            if (tarefa.id === props.tarefaPai.tarefaPai?.id) {
                 return false; 
             }
 
@@ -90,9 +92,9 @@ export default function VincularTarefaModal(props: Props) {
             onRequestClose={props.onDismiss}
         >
             <View style={[styles.container, { backgroundColor: theme.colors.elevation.level1 }]}>
-                <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
-                    <Appbar.Action icon="close" onPress={props.onDismiss} />
-                    <Appbar.Content title="Vincular Tarefa Existente"  />
+                <Appbar.Header style={{ backgroundColor: theme.colors.primary }} mode="center-aligned">
+                    <Appbar.Action icon="close" onPress={props.onDismiss} color={theme.colors.onPrimary} />
+                    <Appbar.Content title="Vincular Tarefa Existente"  titleStyle={{ color: theme.colors.onPrimary}}/>
                 </Appbar.Header>
 
                 <View style={styles.searchContainer}>
@@ -109,9 +111,6 @@ export default function VincularTarefaModal(props: Props) {
                 {isLoading && <ActivityIndicator animating={true} size="large" style={styles.loader} />}
                 {error && <Text style={styles.errorText}>{error}</Text>}
 
-                {!isLoading && !error && searchResults.length === 0 && searchQuery.length > 0 && (
-                    <Text style={styles.emptyText}>Nenhuma tarefa encontrada para "{searchQuery}"</Text>
-                )}
                  {!isLoading && !error && searchResults.length === 0 && searchQuery.length === 0 && (
                     <Text style={styles.emptyText}>Digite para pesquisar tarefas.</Text>
                 )}
@@ -123,7 +122,7 @@ export default function VincularTarefaModal(props: Props) {
                     ItemSeparatorComponent={() => <Divider />}
                     contentContainerStyle={styles.listContent}
                     ListEmptyComponent={() => (
-                        <Text style={styles.emptyText}>Nenhuma tarefa encontrada.</Text>
+                        <Text style={styles.emptyText}>Nenhuma tarefa encontrada para "{searchQuery}"</Text>
                     )}
                 />
                  <Button

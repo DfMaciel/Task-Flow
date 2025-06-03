@@ -9,6 +9,7 @@ type AdicionarSubTarefaComponentProps = {
     tarefaPai: VisualizarTarefa;
     carregarTarefa: () => void;
     handleVincularSubTarefa: (subTarefa: number) => Promise<void>;
+    escolherTarefaPai?: boolean
 }
 
 export default function AdicionarSubTarefaComponent(props: AdicionarSubTarefaComponentProps) {
@@ -56,11 +57,13 @@ export default function AdicionarSubTarefaComponent(props: AdicionarSubTarefaCom
                     onPress={handleOpenVincularModal}
                     title="Existente"
                 />
-                <Menu.Item
-                    leadingIcon="plus-circle-outline"
-                    onPress={handleNavigateToCreateSubtarefa}
-                    title="Nova"
-                />
+                { !props.escolherTarefaPai && (
+                    <Menu.Item
+                        leadingIcon="plus-circle-outline"
+                        onPress={handleNavigateToCreateSubtarefa}
+                        title="Nova"
+                    />
+                )}
             </Menu>
 
             <VincularTarefaModal
