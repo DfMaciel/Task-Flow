@@ -4,12 +4,17 @@ import { useEffect } from "react";
 import { authEmitter } from "@/services/authEmiter";
 import { PaperProvider } from "react-native-paper";
 import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import * as BackgroundFetch from "expo-background-fetch";
+import "@/services/notificacoes/backgroundTask";
 
 function ProtectedLayout() {
   const { userToken, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  
+
+  configurarNotificacoes();
+  registrarBackGroundTask();
   
   useEffect(() => {
     async function prepareApp() {
@@ -41,7 +46,6 @@ function ProtectedLayout() {
     }
 
     prepareApp();
-    configurarNotificacoes();
   }, [userToken, segments, loading, router]);
 
   useEffect(() => {
@@ -63,6 +67,24 @@ function ProtectedLayout() {
         return;
       }
     }
+  }
+
+  async function registrarBackGroundTask() {
+    const isRegistered = await TaskManager.isTaskRegisteredAsync('verificar-tarefas-vencidas');
+
+    if (!isRegistered) {
+      await BackgroundFetch.registerTaskAsync('verificar-tarefas-vencidas', {
+        minimumInterval: 15 * 60,
+        stopOnTerminate: false,
+        startOnBoot: true,
+      });
+      console.log("Tarefa de verificação de tarefas vencidas registrada com sucesso.");
+    } else {
+      console.log("Tarefa de verificação de tarefas vencidas já está registrada.");
+    }
+
+    const status = await BackgroundFetch.getStatusAsync();
+    console.log('Status do BackgroundFetch:', status);
   }
 
   return (

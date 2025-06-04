@@ -8,6 +8,9 @@ export default ({ config }) => ({
     scheme: "myapp",
     extra: {
       SERVER_ROUTE: process.env.SERVER_ROUTE,
+      eas: {
+        projectId: "d47c1373-5c9f-4289-ac87-9a61964d1312"
+      }
     },
     version: "1.0.0",
     orientation: "portrait",
