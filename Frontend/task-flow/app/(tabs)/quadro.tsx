@@ -1,17 +1,43 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { VisualizarTarefa } from "@/types/TarefaInteface";
-import { ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import ListarTarefas from "@/services/tarefas/listarTarefasService";
 import { FiltrosOptions } from "@/types/FiltrosInterface";
 import dateComparer from "@/utils/dateComparer";
 import FilterModal from "@/components/modalFilter";
-import { DraxProvider, DraxView, DraxList } from "react-native-drax";
-import TaskItemComponent from "@/components/taskItemComponent";
-import { Button } from "react-native-paper";
+import { Button, Icon } from "react-native-paper";
+import PrioridadeComponent from "@/components/prioridadeComponent";
+import StatusComponent from "@/components/statusComponent";
+import formatPrazo from "@/utils/dateTimeParser";
+import { useRouter } from "expo-router";
 
-const ItemTarefa = ({ tarefa, isDragging }: { tarefa: VisualizarTarefa; isDragging?: boolean }) => (
-    <TaskItemComponent tarefa={tarefa} onPress={() => {}}/>
-)
+const ItemTarefa = ({ tarefa }: { tarefa: VisualizarTarefa }) => {
+    const router = useRouter();
+
+    const handleSimpleTap = () => {
+        console.log("Simple tap for navigation");
+        router.push(`/home/tarefa/${tarefa.id}`);
+    };
+
+    return (
+
+        <TouchableOpacity onPress={handleSimpleTap} style={{ flex: 1 }}>
+            <View style={styles.container}>
+                <Text style={styles.titulo}>{tarefa.titulo}</Text>
+                <View style={styles.infoContainer}>
+                    {tarefa?.prioridade && <PrioridadeComponent prioridade={tarefa?.prioridade} isEditable={false} />}
+                    {tarefa?.status && <StatusComponent status={tarefa?.status} isEditable={false} />}
+                    <View style={styles.dataContainer}>
+                        <Icon source="calendar-alert" size={24} color="#000"/>
+                        <Text style={{ fontSize: 16, fontWeight: "bold", marginLeft: 4, color: "grey" }}>
+                            {formatPrazo(tarefa?.prazo)}
+                        </Text>
+                    </View>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+}
 
 export default function TelaQuadro() {
     const [tarefas, setTarefas] = useState<VisualizarTarefa[]>([]);
@@ -26,9 +52,11 @@ export default function TelaQuadro() {
     });
     
     const [error, setError] = useState<string | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
 
     const { width, height } = useWindowDimensions();
     const isLandscape = width > height;
+    
 
      const tarefasFiltradas = useMemo(() => {
           return tarefas.filter((tarefa) => {
@@ -56,23 +84,30 @@ export default function TelaQuadro() {
         });
       }, [tarefas, currentFilters, termoBusca]);
 
-    useEffect(() => {
-        async function carregarTarefas() {
-            try {
-                const resposta = await ListarTarefas();
-                if (resposta.status !== 200) {
-                    setError("Erro ao carregar tarefas");
-                    return;
-                }
-                setTarefas(resposta.data);
-            } catch (error) {
-                console.error(error);
-                setError("Erro ao carregar tarefas: " + (error as Error).message || "Erro desconhecido");
+    const carregarTarefas = useCallback(async () => {
+        setError(null);
+        try {
+            const resposta = await ListarTarefas();
+            if (resposta.status !== 200) {
+                setError("Erro ao carregar tarefas");
+                return;
             }
+            setTarefas(resposta.data);
+        } catch (error) {
+            console.error(error);
+            setError("Erro ao carregar tarefas: " + (error as Error).message || "Erro desconhecido");
         }
-
-        carregarTarefas();
     }, []);
+
+    const onRefreshTasks = useCallback(async () => {
+        setRefreshing(true);
+        await carregarTarefas();
+        setRefreshing(false);
+    }, [carregarTarefas]);
+    
+    useEffect(() => {
+        carregarTarefas();
+    }, [carregarTarefas]);
     
     function filtrarTarefasStatus(status: string): VisualizarTarefa[] {
         return tarefasFiltradas.filter(tarefa => tarefa.status === status);
@@ -117,24 +152,22 @@ export default function TelaQuadro() {
     const renderColumnContent = (tasksForColumn: VisualizarTarefa[], columnStatus: string) => {
         return (
             <ScrollView
-                contentContainerStyle={{ flexGrow: 1}}
+                style={{ flex: 1}}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefreshTasks}
+                        colors={["#1e90ff"]} 
+                        tintColor={"#1e90ff"} 
+                    />
+                }
+                showsVerticalScrollIndicator={false}
             >
                 {tasksForColumn.map(tarefa => (
-                    <DraxView
+                    <ItemTarefa 
                         key={tarefa.id}
-                        style={styles.draggableTask}
-                        draggingStyle={styles.dragging}
-                        dragReleasedStyle={styles.dragging}
-                        hoverDraggingStyle={styles.hoverDragging}
-                        dragPayload={tarefa} 
-                        longPressDelay={150} 
-                        onDragStart={() => console.log(`Start dragging ${tarefa.titulo}`)}
-                        // onDragEnd={() => console.log('Drag ended')}
-                    >
-                        <View>
-                            <ItemTarefa tarefa={tarefa} />
-                        </View>
-                    </DraxView>
+                        tarefa={tarefa}
+                    />
                 ))}
             </ScrollView>
         );
@@ -149,7 +182,6 @@ export default function TelaQuadro() {
     }
     
     return (
-        <DraxProvider>
             <View style={styles.fullScreen}>   
                 <View style={styles.filterBar}>
                     <TextInput
@@ -168,38 +200,20 @@ export default function TelaQuadro() {
                 />
 
                 <ScrollView horizontal contentContainerStyle={styles.boardContainer} style={{ flexGrow: 1 }}>
-                    <DraxView
-                        style={columnStyle}
-                        receivingStyle={styles.columnReceiving}
-                        onReceiveDragDrop={handleDrop}
-                        payload="naoiniciada" 
-                    >
+                    <View style={[styles.column, columnStyle]}>
                         <Text style={styles.columnTitle}>Não Iniciadas</Text>
                         {renderColumnContent(naoIniciadas, "naoiniciada")}
-                    </DraxView>
-
-                    <DraxView
-                        style={columnStyle}
-                        receivingStyle={styles.columnReceiving}
-                        onReceiveDragDrop={handleDrop}
-                        payload="emandamento"
-                    >
+                    </View>
+                    <View style={[styles.column, columnStyle]}>
                         <Text style={styles.columnTitle}>Em Andamento</Text>
                         {renderColumnContent(emAndamento, "emandamento")}
-                    </DraxView>
-
-                    <DraxView
-                        style={columnStyle}
-                        receivingStyle={styles.columnReceiving}
-                        onReceiveDragDrop={handleDrop}
-                        payload="concluida"
-                    >
+                    </View>
+                    <View style={[styles.column, columnStyle]}>
                         <Text style={styles.columnTitle}>Concluídas</Text>
                         {renderColumnContent(concluidas, "concluida")}
-                    </DraxView>
+                    </View>
                 </ScrollView>
             </View>
-        </DraxProvider>
     )
 }
 
@@ -235,11 +249,13 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginHorizontal: 5,
         padding: 10,
-        height: '100%', // Make column take full height of the ScrollView content
-        minHeight: 600, // Ensure columns have some height
+        height: '99%',
+        justifyContent: 'flex-start',
+        display: 'flex',
+        flexDirection: 'column',
     },
     columnPortrait: {
-        width: 300,
+        width: 320,
     },
     columnLandscape: {
         width: 380, 
@@ -251,24 +267,27 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         color: '#333',
     },
-    columnReceiving: {
-        borderColor: 'blue',
-        borderWidth: 2,
+    container: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#ccc",
     },
-    draggableTask: {
-        padding: 2, // Small padding so hover/dragging styles are visible around the card
-        marginBottom: 8,
+    titulo: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 4,
     },
-    draggingCard: { // Style for the original card while an instance of it is being dragged
-        opacity: 0.3,
+    descricao: {
+        fontSize: 16,
     },
-    dragging: { // Style for the item being dragged
-        opacity: 0.8,
-        transform: [{ scale: 1.05 }],
-        elevation: 5,
+    infoContainer: {
+        flexDirection: "row",
+        width: "100%",
+        height: 24,
     },
-    hoverDragging: { // Style for the item being dragged when it's hovering over a receiver
-        borderColor: 'green',
-        borderWidth: 2,
+    dataContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginLeft: "auto",
     },
 })
