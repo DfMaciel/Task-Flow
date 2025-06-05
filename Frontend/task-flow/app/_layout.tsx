@@ -7,6 +7,7 @@ import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
 import * as BackgroundFetch from "expo-background-fetch";
 import "@/services/notificacoes/backgroundTask";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 function ProtectedLayout() {
   const { userToken, loading } = useAuth();
@@ -97,10 +98,12 @@ function ProtectedLayout() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <PaperProvider>
-        <ProtectedLayout />
-      </PaperProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <PaperProvider>
+          <ProtectedLayout />
+        </PaperProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }

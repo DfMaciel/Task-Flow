@@ -62,6 +62,23 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="quadro"
+        options={{
+          title: "Quadro",
+          headerShown: true,
+          headerTitle: "Quadro de Tarefas",
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: theme.colors.primary, 
+            height: 56,
+          },
+          headerTintColor: '#FFF', 
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
+          ),
+        }}
+        />
+        <Tabs.Screen
         name="usuario"
         options={{
           title: "Usuário",
