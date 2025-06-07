@@ -37,7 +37,8 @@ export default ({ config }) => ({
       output: "static"
     },
     plugins: [ 
-      "expo-router"
+      "expo-router",
+      "expo-localization",
     ],
     experiments: {
       typedRoutes: true

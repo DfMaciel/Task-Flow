@@ -5,7 +5,7 @@ import ListarTarefas from "@/services/tarefas/listarTarefasService";
 import { FiltrosOptions } from "@/types/FiltrosInterface";
 import dateComparer from "@/utils/dateComparer";
 import FilterModal from "@/components/modalFilter";
-import { Button, Icon } from "react-native-paper";
+import { Button, Icon, useTheme } from "react-native-paper";
 import PrioridadeComponent from "@/components/prioridadeComponent";
 import StatusComponent from "@/components/statusComponent";
 import formatPrazo from "@/utils/dateTimeParser";
@@ -53,6 +53,7 @@ export default function TelaQuadro() {
     
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+    const theme = useTheme();
 
     const { width, height } = useWindowDimensions();
     const isLandscape = width > height;
@@ -124,26 +125,6 @@ export default function TelaQuadro() {
         setFilterModalVisible(false);
     };
 
-    const handleDrop = (
-        event: { dragged: { payload: VisualizarTarefa }; receiver: { payload: string } }
-    ) => {
-        const draggedTask = event.dragged.payload;
-        const targetStatus = event.receiver.payload;
-
-        if (draggedTask.status?.toLowerCase() === targetStatus.toLowerCase()) {
-            return; 
-        }
-
-        setTarefas(prevTarefas =>
-            prevTarefas.map(task =>
-                task.id === draggedTask.id ? { ...task, status: targetStatus } : task
-            )
-        );
-        // The useEffect listening to tarefasFiltradas will update naoIniciadas, emAndamento, concluidas
-        // You might want to call an API to update the task status on the backend here
-        // Ex: await AtualizarStatusTarefa(draggedTask.id, targetStatus);
-    };
-
     const columnStyle = [
         styles.column,
         isLandscape ? styles.columnLandscape : styles.columnPortrait
@@ -200,15 +181,15 @@ export default function TelaQuadro() {
                 />
 
                 <ScrollView horizontal contentContainerStyle={styles.boardContainer} style={{ flexGrow: 1 }}>
-                    <View style={[styles.column, columnStyle]}>
+                    <View style={[styles.column, columnStyle, { backgroundColor: theme.colors.surfaceVariant }]}>
                         <Text style={styles.columnTitle}>Não Iniciadas</Text>
                         {renderColumnContent(naoIniciadas, "naoiniciada")}
                     </View>
-                    <View style={[styles.column, columnStyle]}>
+                    <View style={[styles.column, columnStyle, { backgroundColor: theme.colors.surfaceVariant }]}>
                         <Text style={styles.columnTitle}>Em Andamento</Text>
                         {renderColumnContent(emAndamento, "emandamento")}
                     </View>
-                    <View style={[styles.column, columnStyle]}>
+                    <View style={[styles.column, columnStyle, { backgroundColor: theme.colors.surfaceVariant }]}>
                         <Text style={styles.columnTitle}>Concluídas</Text>
                         {renderColumnContent(concluidas, "concluida")}
                     </View>
@@ -245,7 +226,6 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
     },
     column: {
-        backgroundColor: '#e0e0e0',
         borderRadius: 8,
         marginHorizontal: 5,
         padding: 10,

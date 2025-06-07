@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Calendar, LocaleConfig, Agenda } from 'react-native-calendars';
-import { useTheme, List } from 'react-native-paper';
+import { useTheme, List, Button } from 'react-native-paper';
 import { VisualizarTarefa } from '../../types/TarefaInteface'; 
 import ListarTarefas from '@/services/tarefas/listarTarefasService';
 import formatToDdMmYyyy from '@/utils/formatToDdMmYyyy';
 import { useRouter } from 'expo-router';
+import { syncAllTasksToExternalCalendar } from '@/services/calendario/syncTasks';
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: [
@@ -29,10 +30,6 @@ interface MarkedDatesType {
   };
 }
 
-interface AgendaItemsType {
-  [date: string]: VisualizarTarefa[];
-}
-
 const formatDateToYyyyMmDd = (date: Date): string => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -49,6 +46,7 @@ export default function CalendarioScreen() {
     return formatDateToYyyyMmDd(today);
   });
   const router = useRouter();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     const fetchTarefas = async () => {
@@ -82,7 +80,6 @@ export default function CalendarioScreen() {
             const month = parseInt(parts[1], 10) - 1;
             const day = parseInt(parts[2], 10);
             
-            // Construct date as local date
             const dateObject = new Date(year, month, day);
 
             if (isNaN(dateObject.getTime())) {
@@ -147,6 +144,27 @@ export default function CalendarioScreen() {
     setSelectedDate(day.dateString);
   };
 
+  const handleSyncTasks = async () => {
+    if (isSyncing) return; 
+    setIsSyncing(true);
+    const { successCount, failureCount, skippedCount, messages } = await syncAllTasksToExternalCalendar(tarefas);
+    
+    let summary = `Sincronização Concluída:\n- ${successCount} tarefas sincronizadas com sucesso.\n`;
+    if (failureCount > 0) {
+      summary += `- ${failureCount} tarefas falharam ao sincronizar.\n`;
+    }
+    if (skippedCount > 0) {
+      summary += `- ${skippedCount} tarefas ignoradas (sem prazo).\n`;
+    }
+
+    if (messages.length > 0 && failureCount > 0) { 
+        console.log("Detalhes da sincronização:\n" + messages.filter(msg => msg.includes("falha") || msg.includes("erro")).join("\n"));
+    }
+    
+    Alert.alert("Resultado da Sincronização", summary);
+    setIsSyncing(false);
+  };
+
   if (loading) {
     return <View style={styles.centered}><ActivityIndicator size="large" color={theme.colors.primary} /></View>;
   }
@@ -180,6 +198,15 @@ export default function CalendarioScreen() {
         }}
       />
       <ScrollView style={styles.taskList}>
+        <Button
+            icon="sync"
+            mode="contained"
+            style={styles.addButton}
+            onPress={handleSyncTasks}
+            disabled={isSyncing || loading || tarefas.length === 0}
+          >
+            {isSyncing ? "Sincronizando..." : "Sincronizar Tarefas com Calendário"}
+          </Button>
         {tasksForSelectedDate.length > 0 ? (
           tasksForSelectedDate.map(tarefa => (
             <List.Item
@@ -191,7 +218,7 @@ export default function CalendarioScreen() {
               titleStyle={{ color: theme.colors.onSurfaceVariant }}
               descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
                 onPress={() => {
-                    router.replace(`/home/tarefa/${tarefa.id}`);
+                    router.push(`/home/tarefa/${tarefa.id}`);
                 }}
             />
           ))
@@ -224,5 +251,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-  }
+  },
+  addButton: { 
+    marginTop: 5,
+    backgroundColor: "#6750A4",
+    marginBottom: 15,
+  },
 });
