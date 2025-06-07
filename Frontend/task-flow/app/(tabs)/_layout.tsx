@@ -79,6 +79,40 @@ export default function TabsLayout() {
         }}
         />
         <Tabs.Screen
+        name="calendario" 
+        options={{
+          title: "Calendário",
+          headerShown: true,
+          headerTitle: "Calendário de Tarefas",
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: theme.colors.primary,
+            height: 56,
+          },
+          headerTintColor: '#FFF',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="calendar" size={size} color={color} />
+          ),
+        }}
+      />
+        <Tabs.Screen
+        name="lembretes"
+        options={{
+          title: "Lembretes",
+          headerShown: true,
+          headerTitle: "Meus lembretes",
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: theme.colors.primary, 
+            height: 56,
+          },
+          headerTintColor: '#FFF', 
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="bell" size={size} color={color} />
+          ),
+        }}
+      />
+        <Tabs.Screen
         name="usuario"
         options={{
           title: "Usuário",
