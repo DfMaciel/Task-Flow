@@ -6,6 +6,7 @@ import { VisualizarTarefa } from '@/types/TarefaInteface';
 
 TaskManager.defineTask('verificar-tarefas-vencidas', async () => {
     try {
+        console.log('Iniciando verificação de tarefas vencidas...');
         const resultadoTarefas = await ListarTarefas();
 
         if (resultadoTarefas.status !== 200) {
@@ -24,6 +25,11 @@ TaskManager.defineTask('verificar-tarefas-vencidas', async () => {
                 let dataVencimento = new Date(tarefa.prazo);
                 let vencida = dataVencimento < agora;
                 let proximoVencer = new Date(dataVencimento.getTime() - 24 * 60 * 60 * 1000);
+
+                console.log(`Verificando tarefa: ${tarefa.titulo}`);
+                console.log(`Data de vencimento: ${dataVencimento.toLocaleDateString()}`);
+                console.log(`Vencida: ${vencida}`);
+                console.log(`Próximo vencimento: ${proximoVencer.toLocaleDateString()}`);
 
                 if (vencida) {
                     Notifications.scheduleNotificationAsync({

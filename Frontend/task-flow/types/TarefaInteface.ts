@@ -37,3 +37,13 @@ export interface AtualizarTarefa {
     dataInicio?: string | undefined;
     dataConclusao?: string | undefined;
 }    
+
+export interface TarefaRecorrente {
+    id: string; 
+    nomeTemplate: string; 
+    tituloTarefa?: string;
+    descricaoTarefa?: string;
+    prioridadeTarefa?: string;
+    idCategoriaTarefa?: number;
+    tempoEstimadoTarefa?: string;
+    }

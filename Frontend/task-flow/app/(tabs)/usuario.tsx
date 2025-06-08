@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, FlatList, Alert, ScrollView } from "react-native";
-import { Text, Button, IconButton, Avatar, TextInput, Dialog, Portal, ActivityIndicator, useTheme } from "react-native-paper";
+import { Text, Button, IconButton, Avatar, TextInput, Dialog, Portal, ActivityIndicator, useTheme, List } from "react-native-paper";
 import listarCategorias from "@/services/categorias/listarCategorias";
 import { VisualizarCategoria } from "@/types/CategoriasInterface";
 import { useAuth } from "../authcontext";
@@ -10,7 +10,11 @@ import buscarUsuario from "@/services/usuario/buscarUsuario";
 import excluirCategoria from "@/services/categorias/excluirCategoria";
 import adicionarCategorias from "@/services/categorias/adicionarCategoria";
 import atualizarUsuario from "@/services/usuario/atualizarUsuario";
-import { white } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
+import { TarefaRecorrente } from "@/types/TarefaInteface";
+import listarTarefasRecorrentes from "@/services/tarefasRecorrentes/listarTarefasRecorrentes";
+import salvarTarefaRecorrente from "@/services/tarefasRecorrentes/salvarTarefaRecorrente";
+import excluirTarefaRecorrente from "@/services/tarefasRecorrentes/excluirTarefaRecorrente";
+import DropDownPicker from "react-native-dropdown-picker";
 
 export default function TelaUsuario() {
   const { logout } = useAuth();
@@ -32,6 +36,27 @@ export default function TelaUsuario() {
   const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
   const [editError, setEditError] = useState("");
 
+  const [tarefasRecorrentes, setTarefasRecorrentes] = useState<TarefaRecorrente[]>([]);
+  const [tarefasRecorrentesLoading, setTarefasRecorrentesLoading] = useState(false);
+  const [addTarefaRecorrenteDialogVisible, setAddTarefaRecorrenteDialogVisible] = useState(false);
+  
+  const [newTarefaRecorrenteNome, setNewTarefaRecorrenteNome] = useState("");
+  const [newTarefaRecorrenteTitulo, setNewTarefaRecorrenteTitulo] = useState("");
+  const [newTarefaRecorrenteDescricao, setNewTarefaRecorrenteDescricao] = useState("");
+  const [newTarefaRecorrentePrioridade, setNewTarefaRecorrentePrioridade] = useState("Baixa");
+  const [newTarefaRecorrenteCategoria, setNewTarefaRecorrenteCategoria] = useState<number | null>(null);
+  const [newTarefaRecorrenteTempoEstimado, setNewTarefaRecorrenteTempoEstimado] = useState<string>("");
+  
+  const [openPrioridade, setOpenPrioridade] = useState(false);
+  const [prioridadeItens, setPrioridadeItens] = useState([
+      { label: "Baixa", value: "1" },
+      { label: "Média", value: "2" },
+      { label: "Alta", value: "3" },
+  ]);
+
+  const [openCategoria, setOpenCategoria] = useState(false);
+  const [categoriasMapeadas, setCategoriasMapeadas] = useState<{ label: string; value: number }[]>([]);
+
   async function fetchUsuario() {
     setLoading(true);
     try {
@@ -52,6 +77,7 @@ export default function TelaUsuario() {
 
   useEffect(() => {
     fetchUsuario();
+    fetchTarefasRecorrentes();
   }, []);
 
   const fetchCategorias = async () => {
@@ -64,6 +90,18 @@ export default function TelaUsuario() {
     }
     setLoading(false);
   };
+  
+  useMemo(() => {
+    if (categorias.length > 0) {
+      const mappedCategorias = categorias.map(cat => ({
+        label: cat.nome,
+        value: cat.id,
+      }));
+      setCategoriasMapeadas(mappedCategorias);
+    } else {
+      setCategoriasMapeadas([]);
+    }
+  }, [categorias]);
 
   const handleLogout = async () => {
     await logout();
@@ -197,6 +235,88 @@ export default function TelaUsuario() {
         setLoading(false);
     }
   };
+
+  const fetchTarefasRecorrentes = async () => {
+    setTarefasRecorrentesLoading(true);
+    try {
+      const resposta = await listarTarefasRecorrentes(); 
+      setTarefasRecorrentes(resposta);
+    } catch (error) {
+      console.error("Erro ao buscar tarefas recorrentes:", error);
+      setTarefasRecorrentes([]);
+    } finally {
+      setTarefasRecorrentesLoading(false);
+    }
+  }
+
+  const handleAddTarefaRecorrente = async () => {
+    if (!newTarefaRecorrenteNome.trim()) {
+      Alert.alert("Erro", "O nome da tarefa recorrente é obrigatório.");
+      return;
+    }
+
+    const tarefaRecorrente: Omit<TarefaRecorrente, 'id'> = {
+      nomeTemplate: newTarefaRecorrenteNome,
+      tituloTarefa: newTarefaRecorrenteTitulo,
+      descricaoTarefa: newTarefaRecorrenteDescricao,
+      prioridadeTarefa: newTarefaRecorrentePrioridade,
+      idCategoriaTarefa: newTarefaRecorrenteCategoria || undefined,
+      tempoEstimadoTarefa: newTarefaRecorrenteTempoEstimado || undefined,
+    };
+
+    try {
+      await salvarTarefaRecorrente(tarefaRecorrente);
+      
+      Alert.alert("Sucesso", "Tarefa recorrente adicionada com sucesso.");
+      setAddTarefaRecorrenteDialogVisible(false);
+      setNewTarefaRecorrenteNome("");
+      setNewTarefaRecorrenteTitulo("");
+      setNewTarefaRecorrenteDescricao("");
+      setNewTarefaRecorrentePrioridade("Baixa");
+      setNewTarefaRecorrenteCategoria(null);
+      setNewTarefaRecorrenteTempoEstimado("");
+      
+      fetchTarefasRecorrentes();
+    } catch (error) {
+      console.error("Erro ao adicionar tarefa recorrente:", error);
+      Alert.alert("Erro", "Não foi possível adicionar a tarefa recorrente.");
+    }
+  }
+  
+  const handleExcluirTarefaRecorrente = (tarefa: TarefaRecorrente) => {
+    Alert.alert(
+      "Excluir Tarefa Recorrente",
+      `Deseja excluir a tarefa recorrente "${tarefa.nomeTemplate}"?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await excluirTarefaRecorrente(tarefa.id);
+              Alert.alert("Sucesso", "Tarefa recorrente excluída com sucesso.");
+              fetchTarefasRecorrentes();
+            } catch (error) {
+              console.error("Erro ao excluir tarefa recorrente:", error);
+              Alert.alert("Erro", "Não foi possível excluir a tarefa recorrente.");
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  const handleUsarTarefaRecorrente = (tarefa: TarefaRecorrente) => {
+    const params = new URLSearchParams();
+    if (tarefa.tituloTarefa) params.append('templateTitulo', tarefa.tituloTarefa);
+    if (tarefa.descricaoTarefa) params.append('templateDescricao', tarefa.descricaoTarefa);
+    if (tarefa.prioridadeTarefa) params.append('templatePrioridade', tarefa.prioridadeTarefa);
+    if (tarefa.idCategoriaTarefa) params.append('templateIdCategoria', tarefa.idCategoriaTarefa.toString());
+    if (tarefa.tempoEstimadoTarefa) params.append('templateTempoEstimado', tarefa.tempoEstimadoTarefa);
+    
+    router.push(`/home/adicionarTarefa?${params.toString()}`);
+  }
 
   if (loading && !usuario) {
     return (
@@ -349,6 +469,47 @@ export default function TelaUsuario() {
       >
         Adicionar categoria
       </Button>
+
+      <Text style={styles.sectionTitle}>Tarefas Recorrentes</Text>
+      <FlatList
+        data={tarefasRecorrentes}
+        keyExtractor={(item) => item.id}
+        style={styles.recorrenteList}
+        contentContainerStyle={{ paddingBottom: 16 }}
+        renderItem={({ item }) => (
+          <List.Item
+            title={item.nomeTemplate}
+            description={item.tituloTarefa ? `Título: ${item.tituloTarefa}` : 'Toque para usar'}
+            left={props => <List.Icon {...props} icon="content-copy" />}
+            right={props => <IconButton {...props} icon="delete-outline" onPress={() => handleExcluirTarefaRecorrente(item)} />}
+            onPress={() => handleUsarTarefaRecorrente(item)}
+            style={styles.recorrenteItem}
+            titleStyle={[styles.recorrenteTitle, { color: theme.colors.onSurface }]}
+            descriptionStyle={[styles.recorrenteDetail, { color: theme.colors.onSurfaceVariant }]}
+          />
+        )}
+        ListEmptyComponent={
+          tarefasRecorrentesLoading ? (
+            <ActivityIndicator animating={true} color={theme.colors.primary} style={{marginTop: 16}} />
+          ) : (
+            <Text style={{ color: "#888", textAlign: "center", marginTop: 16 }}>
+              Nenhuma tarefa recorrente cadastrada.
+            </Text>
+          )
+        }
+        refreshing={tarefasRecorrentesLoading}
+        onRefresh={fetchTarefasRecorrentes}
+        scrollEnabled={false} 
+      />
+      <Button
+        icon="plus-circle-outline"
+        mode="contained"
+        style={styles.addButton}
+        onPress={() => setAddTarefaRecorrenteDialogVisible(true)}
+      >
+        Adicionar Tarefa Recorrente
+      </Button>
+
       <Button
         mode="outlined"
         style={styles.logoutButton}
@@ -371,6 +532,95 @@ export default function TelaUsuario() {
           <Dialog.Actions>
             <Button onPress={() => setAddDialogVisible(false)}>Cancelar</Button>
             <Button onPress={handleAddCategoria} disabled={!newCategoria.trim()}>Adicionar</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+      
+      <Portal>
+        <Dialog visible={addTarefaRecorrenteDialogVisible} onDismiss={() => setAddTarefaRecorrenteDialogVisible(false)}>
+          <Dialog.Title>Nova Tarefa Recorrente</Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              label="Nome da Tarefa Recorrente"
+              value={newTarefaRecorrenteNome}
+              onChangeText={setNewTarefaRecorrenteNome}
+              mode="outlined"
+              style={{ marginBottom: 8 }}
+              autoFocus
+            />
+            <TextInput
+              label="Título Padrão da Tarefa (Opcional)"
+              value={newTarefaRecorrenteTitulo}
+              onChangeText={setNewTarefaRecorrenteTitulo}
+              mode="outlined"
+              style={{ marginBottom: 8 }}
+            />
+            <TextInput
+              label="Descrição Padrão da Tarefa (Opcional)"
+              value={newTarefaRecorrenteDescricao}
+              onChangeText={setNewTarefaRecorrenteDescricao}
+              mode="outlined"
+              style={{ marginBottom: 8 }}
+              multiline
+              numberOfLines={3}
+            />
+            <DropDownPicker
+                open={openPrioridade}
+                value={newTarefaRecorrentePrioridade}
+                items={prioridadeItens}
+                setOpen={(isOpen) => {
+                    setOpenPrioridade(isOpen);
+                    if (isOpen) {
+                        setOpenCategoria(false); 
+                    }
+                }}
+                setValue={setNewTarefaRecorrentePrioridade}
+                setItems={setPrioridadeItens}
+                placeholder="Selecione a prioridade"
+                listMode="SCROLLVIEW"
+                tickIconStyle={{ tintColor: theme.colors.primary } as any}
+                style={[
+                    styles.dropdown, 
+                ]}
+                dropDownContainerStyle={[styles.dropdownContainer,
+                    { borderColor: theme.colors.primary, borderWidth: 1.5 }
+                ]}
+                zIndex={3000}
+                zIndexInverse={1000} 
+            />
+            <DropDownPicker
+                open={openCategoria}
+                value={newTarefaRecorrenteCategoria}
+                items={categoriasMapeadas}
+                setOpen={(isOpen) => {
+                    setOpenCategoria(isOpen); 
+                    if (isOpen) {
+                        setOpenPrioridade(false); 
+                    }
+                }}
+                setValue={setNewTarefaRecorrenteCategoria}
+                setItems={setCategoriasMapeadas}
+                placeholder="Selecione uma categoria"
+                ListEmptyComponent={() => (
+                    <Text style={{ padding: 10, textAlign: 'center' }}>
+                        Nenhuma categoria encontrada
+                    </Text>
+                )}
+                listMode="SCROLLVIEW"
+                tickIconStyle={{ tintColor: theme.colors.primary } as any}
+                style={[
+                    styles.dropdown, 
+                ]}
+                dropDownContainerStyle={[styles.dropdownContainer,
+                    { borderColor: theme.colors.primary, borderWidth: 1.5 }
+                ]}
+                zIndex={2000}
+                zIndexInverse={2000}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setAddTarefaRecorrenteDialogVisible(false)}>Cancelar</Button>
+            <Button onPress={handleAddTarefaRecorrente} disabled={!newTarefaRecorrenteNome.trim()}>Adicionar Tarefa Recorrente</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -481,4 +731,33 @@ const styles = StyleSheet.create({
     marginTop: 24,
     borderColor: "#6750A4",
   },
+  recorrenteList: {
+    flexGrow: 0,
+    marginBottom: 16,
+  },
+  recorrenteItem: {
+    backgroundColor: "#FBF8FF", 
+    borderWidth: 1,
+    borderColor: "#EADDFF",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  recorrenteTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  recorrenteDetail: {
+    fontSize: 13,
+  },
+  dropdown: {
+        marginVertical: 8,
+        backgroundColor: 'white',
+        borderWidth: 0,
+        borderBottomWidth: 1,
+        borderColor: 'rgb(124, 117, 126)',
+        borderRadius: 3,
+    },
+    dropdownContainer: {
+        backgroundColor: 'white',
+    },
 });

@@ -44,10 +44,22 @@ export default function AdicionarTarefaPage() {
     const searchParams= useSearchParams();
     const id = searchParams.get("id");
     useEffect(() => {
+        const templateTitulo = searchParams.get('templateTitulo');
+        const templateDescricao = searchParams.get('templateDescricao');
+        const templatePrioridade = searchParams.get('templatePrioridade');
+        const templateIdCategoria = searchParams.get('templateIdCategoria');
+        const templateTempoEstimado = searchParams.get('templateTempoEstimado');
+        
+        if (templateTitulo) setTitulo(templateTitulo);
+        if (templateDescricao) setDescricao(templateDescricao);
+        if (templatePrioridade) setPrioridade(templatePrioridade);
+        if (templateIdCategoria) setCategoria(Number(templateIdCategoria));
+        if (templateTempoEstimado) setTempoEstimado(templateTempoEstimado);
+
         if (id) {
             setTarefaEscolhida(Number(id));
             }
-        }, [id]);
+        }, [searchParams]);
 
     const onChangePrazo = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || prazo;
