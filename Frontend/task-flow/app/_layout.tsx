@@ -2,12 +2,13 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import AuthProvider,{ useAuth } from "./authcontext";
 import { useEffect } from "react";
 import { authEmitter } from "@/services/authEmiter";
-import { PaperProvider } from "react-native-paper";
+import { MD3LightTheme, PaperProvider } from "react-native-paper";
 import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
 import * as BackgroundFetch from "expo-background-fetch";
 import "@/services/notificacoes/backgroundTask";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { StatusBar } from 'expo-status-bar';
 
 function ProtectedLayout() {
   const { userToken, loading } = useAuth();
@@ -97,10 +98,12 @@ function ProtectedLayout() {
 }
 
 export default function RootLayout() {
+  const appTheme = MD3LightTheme;
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
-        <PaperProvider>
+        <PaperProvider theme={appTheme}>
+          <StatusBar style="light" translucent={false} backgroundColor="black"/>
           <ProtectedLayout />
         </PaperProvider>
       </AuthProvider>
