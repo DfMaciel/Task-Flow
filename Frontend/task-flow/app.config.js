@@ -17,7 +17,10 @@ export default ({ config }) => ({
     userInterfaceStyle: "automatic",
     newArchEnabled: true, // Note: Consider if you really need/want the new architecture enabled.
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      infoPlist: {
+        NSCalendarsUsageDescription: "Esta aplicação precisa de acesso ao seu calendário para adicionar e gerenciar prazos de tarefas.",
+      }
     },
     android: {
       package: "com.davi_maciel.taskflow", 
@@ -28,7 +31,9 @@ export default ({ config }) => ({
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE", 
-        "android.permission.INTERNET"
+        "android.permission.INTERNET",
+        "android.permission.READ_CALENDAR",    
+        "android.permission.WRITE_CALENDAR"
       ],
       usesCleartextTraffic: true 
     },
