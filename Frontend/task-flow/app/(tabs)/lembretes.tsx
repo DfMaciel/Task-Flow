@@ -3,11 +3,14 @@ import { Lembrete, CriarLembrete } from "@/types/LembreteInterface";
 import listarLembretes from "@/services/lembretes/listarLembretes";
 import criarLembrete from "@/services/lembretes/criarLembrete";
 import excluirLembrete from "@/services/lembretes/excluirLembrete";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { ActivityIndicator, Button, Chip, Dialog, IconButton, List, Portal, TextInput, useTheme } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker, { DateTimePickerEvent, DateTimePickerAndroid } from "@react-native-community/datetimepicker"; 
+import { VisualizarTarefa } from "@/types/TarefaInteface";
+import ListarTarefas from "@/services/tarefas/listarTarefasService";
+import { useRouter } from "expo-router";
 
 const DIAS_SEMANA = [
     { label: "Dom", value: 1 }, 
@@ -41,7 +44,13 @@ export default function TelaLembretes() {
     const [diasSemanaSelecionados, setDiasSemanaSelecionados] = useState<number[]>([]);
     const [diaMesSelecionado, setDiaMesSelecionado] = useState<string>("");
     
+    const [tarefas, setTarefas] = useState<VisualizarTarefa[]>([]);
+    const [loadingTarefas, setLoadingTarefas] = useState(false);
+    const [tarefasVencidas, setTarefasVencidas] = useState<VisualizarTarefa[]>([]);
+    const [tarefasPendentes, setTarefasPendentes] = useState<VisualizarTarefa[]>([]);
+    
     const theme = useTheme();
+    const router = useRouter();
     
     const fetchLembretes = async () => {
         setLoadingLembretes(true);
@@ -55,9 +64,71 @@ export default function TelaLembretes() {
         }
     }
     
+    const fetchTarefas = async () => {
+        setLoadingTarefas(true);
+        try {
+            const response = await ListarTarefas(); 
+            setTarefas(response.data);
+        } catch (error) {
+            console.error("Erro ao buscar tarefas:", error);
+            setTarefas([]);
+        } finally {
+            setLoadingTarefas(false);
+        }
+    }
+    
     useEffect(() => {
         fetchLembretes();
+        fetchTarefas();
     }, []);
+
+    useEffect(() => {
+        if (tarefas.length > 0) {
+            const agora = new Date();
+            const pertoVencer = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
+            const parsePrazoAsEndOfDay = (prazoStr: string | null | undefined): Date | null => {
+                if (!prazoStr) return null;
+                if (prazoStr.length === 10 && prazoStr.includes('-')) {
+                    const [year, month, day] = prazoStr.split('-').map(Number);
+                    return new Date(year, month - 1, day, 23, 59, 59, 999); 
+                }
+                return new Date(prazoStr);
+            };
+            
+            const vencidas: VisualizarTarefa[] = [];
+            const proximas: VisualizarTarefa[] = [];
+
+            tarefas.forEach(tarefa => {
+            if (tarefa.status === 'concluida') return;
+
+            const prazoDate = parsePrazoAsEndOfDay(tarefa.prazo);
+            if (!prazoDate) return;
+
+            if (prazoDate < agora) {
+                vencidas.push(tarefa);
+            } else if (prazoDate >= agora && prazoDate <= pertoVencer) {
+                proximas.push(tarefa);
+            }
+        });
+
+        setTarefasVencidas(vencidas.sort((a, b) => new Date(a.prazo!).getTime() - new Date(b.prazo!).getTime()));
+        setTarefasPendentes(proximas.sort((a, b) => new Date(a.prazo!).getTime() - new Date(b.prazo!).getTime()));
+        }
+    }, [tarefas]);
+    
+    const exibirStatus = (status: string | undefined) => {
+        if (!status) return "N/A";
+        switch (status.toLowerCase()) {
+            case 'naoiniciada':
+                return "Não iniciada";
+            case 'emandamento':
+                return "Em Andamento";
+            case 'concluida':
+                return "Concluída";
+            default:
+                return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+    }
 
     const toggleDiaSemana = (diaValor: number) => {
         setDiasSemanaSelecionados(prev => 
@@ -95,7 +166,7 @@ export default function TelaLembretes() {
       dataHora: newLembreteDataHora.toISOString(),
       frequencia: newLembreteFrequencia,
       diasSemana: newLembreteFrequencia === 'semanal' ? diasSemanaSelecionados.sort((a,b) => a-b) : undefined,
-     diaMes: diaMesNum,
+      diaMes: diaMesNum,
     };
 
     const savedReminder = await criarLembrete(lembrete);
@@ -177,7 +248,7 @@ export default function TelaLembretes() {
 
     const showDateTimePicker = () => {
         if (Platform.OS === 'android') {
-            setCurrentPickerMode('date'); // Start with date
+            setCurrentPickerMode('date'); 
             DateTimePickerAndroid.open({
                 value: newLembreteDataHora,
                 mode: 'date',
@@ -185,7 +256,6 @@ export default function TelaLembretes() {
                 minimumDate: new Date(),
             });
         } else {
-            // For iOS, we can use the state-driven approach with mode="datetime"
             setShowLembretePicker(true);
         }
     };
@@ -200,7 +270,7 @@ export default function TelaLembretes() {
       <FlatList
         data={lembretes}
         keyExtractor={(item) => item.id}
-        style={styles.recorrenteList} // Can reuse or create new style
+        style={styles.recorrenteList} 
         contentContainerStyle={{ paddingBottom: 16 }}
         renderItem={({ item }) => (
           <List.Item
@@ -240,6 +310,75 @@ export default function TelaLembretes() {
       >
         Adicionar Lembrete
       </Button>
+      
+      <Text style={styles.sectionTitle}>Tarefas próximas do vencimento</Text>
+       <FlatList
+            data={tarefasPendentes}
+            keyExtractor={(item) => item.id.toString()} 
+            style={styles.recorrenteList} 
+            contentContainerStyle={{ paddingBottom: 16 }}
+            renderItem={({ item }) => {
+                const prazoDate = item.prazo ? new Date(item.prazo.length === 10 && item.prazo.includes('-') ? item.prazo + "T00:00:00" : item.prazo) : null;
+                return (
+                    <List.Item
+                        title={item.titulo}
+                        description={`Prazo: ${prazoDate ? prazoDate.toLocaleDateString('pt-BR') : 'N/A'}\nStatus: ${exibirStatus(item.status)}\nPrioridade: ${item.prioridade || 'N/A'}`}
+                        left={props => <List.Icon {...props} icon="clock-fast" color={theme.colors.onTertiaryContainer} />}
+                        style={[styles.recorrenteItem, { backgroundColor: theme.colors.tertiaryContainer }]} 
+                        titleStyle={[styles.recorrenteTitle, { color: theme.colors.onTertiaryContainer }]}
+                        descriptionStyle={[styles.recorrenteDetail, { color: theme.colors.onTertiaryContainer }]}
+                        onPress={() => router.push(`/home/tarefa/${item.id}`)}
+                    />
+                );
+            }}
+            ListEmptyComponent={
+                loadingTarefas ? (
+                    <ActivityIndicator animating={true} color={theme.colors.primary} style={{marginTop: 16}} />
+                ) : (
+                    <Text style={[styles.emptyListText, {color: theme.colors.onSurfaceVariant}]}>
+                        Nenhuma tarefa próxima do vencimento.
+                    </Text>
+                )
+            }
+            refreshing={loadingTarefas}
+            onRefresh={fetchTarefas} 
+            scrollEnabled={false} 
+        />
+
+      <Text style={styles.sectionTitle}>Tarefas vencidas</Text>
+       <FlatList
+            data={tarefasVencidas}
+            keyExtractor={(item) => item.id.toString()} 
+            style={styles.recorrenteList} 
+            contentContainerStyle={{ paddingBottom: 16 }}
+            renderItem={({ item }) => {
+                const prazoDate = item.prazo ? new Date(item.prazo.length === 10 && item.prazo.includes('-') ? item.prazo + "T00:00:00" : item.prazo) : null;
+                return (
+                    <List.Item
+                        title={item.titulo}
+                        description={`Prazo: ${prazoDate ? prazoDate.toLocaleDateString('pt-BR') : 'N/A'}\nStatus: ${exibirStatus(item.status)}\nPrioridade: ${item.prioridade || 'N/A'}`}
+                        left={props => <List.Icon {...props} icon="alert-circle-outline" color={theme.colors.onErrorContainer} />}
+                        style={[styles.recorrenteItem, { backgroundColor: theme.colors.errorContainer }]} 
+                        titleStyle={[styles.recorrenteTitle, { color: theme.colors.onErrorContainer }]}
+                        descriptionStyle={[styles.recorrenteDetail, { color: theme.colors.onErrorContainer }]}
+                        onPress={() => router.push(`/home/tarefa/${item.id}`)} 
+                    />
+                );
+            }}
+            ListEmptyComponent={
+                loadingTarefas ? (
+                    <ActivityIndicator animating={true} color={theme.colors.primary} style={{marginTop: 16}} />
+                ) : (
+                    <Text style={[styles.emptyListText, {color: theme.colors.onSurfaceVariant}]}>
+                        Nenhuma tarefa vencida.
+                    </Text>
+                )
+            }
+            refreshing={loadingTarefas}
+            onRefresh={fetchTarefas} 
+            scrollEnabled={false} 
+        />
+
 
       <Portal>
         <Dialog visible={addLembreteDialogVisible} onDismiss={() => {
@@ -402,6 +541,19 @@ const styles = StyleSheet.create({
     },
     dayChip: {
         margin: 2,
-        // backgroundColor: theme.colors.surfaceVariant, // Default background
+    },
+    sectionTitle: { 
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 8,
+        color: "#6750A4",
+        marginTop: 16,
+    },
+    emptyListText: { 
+        color: "#888", 
+        textAlign: "center", 
+        marginTop: 16,
+        marginBottom: 16,
+        fontSize: 14,
     },
 });
