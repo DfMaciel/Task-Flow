@@ -750,14 +750,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   dropdown: {
-        marginVertical: 8,
-        backgroundColor: 'white',
-        borderWidth: 0,
-        borderBottomWidth: 1,
-        borderColor: 'rgb(124, 117, 126)',
-        borderRadius: 3,
-    },
-    dropdownContainer: {
-        backgroundColor: 'white',
-    },
+    marginVertical: 8,
+    backgroundColor: 'white',
+    borderWidth: 0,
+    borderBottomWidth: 1,
+    borderColor: 'rgb(124, 117, 126)',
+    borderRadius: 3,
+  },
+  dropdownContainer: {
+      backgroundColor: 'white',
+  },
 });

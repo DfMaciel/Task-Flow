@@ -18,7 +18,7 @@ TaskManager.defineTask('verificar-tarefas-vencidas', async () => {
         const agora = new Date();
 
         tarefas.forEach((tarefa: VisualizarTarefa) => {
-            if (tarefa.status !== 'concluida') {
+            if (tarefa.status == 'concluida') {
                 return;
             }
             if (tarefa.prazo) {

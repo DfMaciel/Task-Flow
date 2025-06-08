@@ -71,6 +71,14 @@ function ProtectedLayout() {
     }
   }
 
+  Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
   async function registrarBackGroundTask() {
     const isRegistered = await TaskManager.isTaskRegisteredAsync('verificar-tarefas-vencidas');
 
