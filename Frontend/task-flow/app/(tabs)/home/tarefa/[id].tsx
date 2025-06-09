@@ -11,7 +11,7 @@ import { VisualizarTarefa } from "@/types/TarefaInteface";
 import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
 import { useRouter, useSearchParams } from "expo-router/build/hooks";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { View, Text, SectionList, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert } from "react-native";
 import { Icon, IconButton, TextInput, Button } from "react-native-paper";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -103,6 +103,40 @@ export default function VisualizarTarefaPage() {
         setShowConclusaoPicker(Platform.OS === 'ios');
         setDataConclusao(currentDate);
       };
+      
+    const timeSpentInfo = useMemo(() => {
+        if (!tarefa || !tarefa.dataInicio) {
+            return { hoursSpent: null, isOverEstimate: false, displayText: null };
+        }
+
+        const dataInicio = new Date(tarefa.dataInicio);
+        const dataFim = tarefa.dataConclusao ? new Date(tarefa.dataConclusao) : new Date();
+
+        if (isNaN(dataInicio.getTime())) {
+            return { hoursSpent: null, isOverEstimate: false, displayText: "Data de início inválida" };
+        }
+
+        const diffMs = dataFim.getTime() - dataInicio.getTime();
+
+        if (diffMs <= 0) {
+            return { hoursSpent: 0, isOverEstimate: false, displayText: "0.0 horas" };
+        }
+
+        const hoursSpent = diffMs / (1000 * 60 * 60);
+        let isOverEstimate = false;
+        
+        const tempoEstimadoNum = parseFloat(tarefa.tempoEstimado || "");
+
+        if (!isNaN(tempoEstimadoNum) && tempoEstimadoNum > 0) {
+            isOverEstimate = hoursSpent > tempoEstimadoNum;
+        }
+
+        return {
+            hoursSpent: hoursSpent,
+            isOverEstimate: isOverEstimate,
+            displayText: `${hoursSpent.toFixed(1)} horas`
+        };
+    }, [tarefa]);
 
     useEffect(() => {
         if (!isEditing) {
@@ -479,6 +513,25 @@ export default function VisualizarTarefaPage() {
                             <Text style={style.prazo}>Prazo: {formatPrazo(tarefa?.prazo)} - </Text>
                             <Icon source="timer-outline" size={20} color="grey"/>
                             <Text style={{fontWeight: "bold", color: "grey", fontSize: 16}}>{tarefa?.tempoEstimado} horas</Text>
+                            {tarefa?.dataInicio && timeSpentInfo.displayText && (
+                                <>
+                                    {tarefa?.tempoEstimado && <Text style={{color: "grey", fontSize: 16, fontWeight: "bold"}}> / </Text>}
+                                    <View style={{marginRight: 2, marginLeft: tarefa?.tempoEstimado ? 2 : 4 }}>
+                                        <Icon 
+                                            source="progress-clock" 
+                                            size={16} 
+                                            color={timeSpentInfo.isOverEstimate ? "red" : "grey"}
+                                        />
+                                    </View>
+                                    <Text style={{
+                                        fontWeight: "bold", 
+                                        fontSize: 16, 
+                                        color: timeSpentInfo.isOverEstimate ? "red" : "grey"
+                                    }}>
+                                        {timeSpentInfo.displayText}
+                                    </Text>
+                                </>
+                            )}
                         </View>
                         <Text style={[style.prazo, {marginBottom: 5}]}>Criada em: {formatDateTime(tarefa?.dataCriacao)}</Text>
                         <Text style={[style.prazo, {marginBottom: 5}]}>Iniciada em: {tarefa?.dataInicio? formatDateTime(tarefa?.dataInicio) : "Não foi iniciada"}</Text>
