@@ -9,6 +9,7 @@ import * as BackgroundFetch from "expo-background-fetch";
 import "@/services/notificacoes/backgroundTask";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from 'expo-status-bar';
+import { Platform } from "react-native";
 
 function ProtectedLayout() {
   const { userToken, loading } = useAuth();
@@ -80,6 +81,10 @@ function ProtectedLayout() {
 });
 
   async function registrarBackGroundTask() {
+    if (Platform.OS === "web") {
+      console.warn("Background tasks are not supported on web.");
+      return;
+    }
     const isRegistered = await TaskManager.isTaskRegisteredAsync('verificar-tarefas-vencidas');
 
     if (!isRegistered) {

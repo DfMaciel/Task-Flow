@@ -80,11 +80,13 @@ export async function login(email: string, senha: string) {
   console.log("[LOGIN_SERVICE] Entered login function."); 
   console.log("[LOGIN_SERVICE] SERVER_ROUTE:", SERVER_ROUTE);
   try {
-      console.error("[LOGIN_SERVICE] SERVER_ROUTE is undefined or null. Cannot make request.");
+      console.log("tentando logar")
+      console.log("payload", email, senha)
       const response = await axios.post(`${SERVER_ROUTE}/autenticacao`, {
           email,
           senha
       });
+      console.log("[LOGIN_SERVICE] axios.post call made. Response:", response.status);
       console.log("[LOGIN_SERVICE] axios.post call completed. Response received:", response);
 
 
