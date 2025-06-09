@@ -15,7 +15,7 @@ export default ({ config }) => ({
     version: "1.0.0",
     orientation: "default",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true, // Note: Consider if you really need/want the new architecture enabled.
+    newArchEnabled: false, // Note: Consider if you really need/want the new architecture enabled.
     ios: {
       supportsTablet: true,
       infoPlist: {
