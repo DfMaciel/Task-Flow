@@ -14,9 +14,9 @@ public class SalvarArquivo {
     private final String caminhoBase = localizarPastaAnexos();
 
     private String localizarPastaAnexos() {
-        File diretorioAtual = new File(System.getProperty("user.dir")); // Diretório do projeto
+        File diretorioAtual = new File(System.getProperty("java.io.tmpdir")); 
         while (diretorioAtual != null) {
-            File pastaAnexos = new File(diretorioAtual, "task-flow/src/main/java/com/example/task_flow/anexos");
+            File pastaAnexos = new File(diretorioAtual, "anexos");
             if (pastaAnexos.exists() && pastaAnexos.isDirectory()) {
                 return pastaAnexos.getAbsolutePath();
             }
