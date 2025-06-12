@@ -9,7 +9,15 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "developmentClient": false,
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "SERVER_ROUTE": "task-flow-production.up.railway.app"
+      }
     },
     "production": {
       "developmentClient": false,
@@ -19,7 +27,7 @@
         "buildType": "apk"
       },
       "env": {
-        "SERVER_ROUTE": "http://35.171.72.105:8080"
+        "SERVER_ROUTE": "task-flow-production.up.railway.app"
       }
     }
   },
