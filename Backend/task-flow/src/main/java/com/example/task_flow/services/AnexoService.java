@@ -6,8 +6,9 @@ import com.example.task_flow.entities.Anexo;
 import com.example.task_flow.entities.Tarefa;
 import com.example.task_flow.repository.AnexoRepository;
 import com.example.task_flow.repository.TarefaRepository;
+import com.example.task_flow.utils.CloudinaryUpload;
 import com.example.task_flow.utils.ExcluirArquivo;
-import com.example.task_flow.utils.SalvarArquivo;
+//import com.example.task_flow.utils.SalvarArquivo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -29,17 +30,22 @@ public class AnexoService {
     @Autowired
     private TarefaRepository tarefaRepository;
 
+//    @Autowired
+//    private SalvarArquivo salvarArquivo;
+
     @Autowired
-    private SalvarArquivo salvarArquivo;
+    private CloudinaryUpload cloudinaryUpload;
 
     @Autowired
     private ExcluirArquivo excluirArquivo;
 
     public Anexo salvarAnexo(MultipartFile arquivo, Tarefa tarefa, Long usuarioId) {
         try {
-            String diretorioArquivo =  salvarArquivo.salvar(arquivo, tarefa.getId(), usuarioId);
+//            String diretorioArquivo =  salvarArquivo.salvar(arquivo, tarefa.getId(), usuarioId);
+            String urlArquivo = cloudinaryUpload.cloudinaryUpload(arquivo);
+
             Anexo anexo = new Anexo();
-            anexo.setCaminho(diretorioArquivo);
+            anexo.setCaminho(urlArquivo);
             anexo.setTarefa(tarefa);
             anexo.setNome(arquivo.getOriginalFilename());
             anexo.setTipo(arquivo.getContentType());

@@ -59,16 +59,17 @@ public class AnexoController {
             return ResponseEntity.status(403).body("Usuário não tem acesso à esse anexo!");
         }
         try {
-            AnexoDto baixarAnexo = anexoService.baixarAnexo(anexo.getId());
-            if (baixarAnexo == null) {
-                return ResponseEntity.notFound().build();
-            }
+//            AnexoDto baixarAnexo = anexoService.baixarAnexo(anexo.getId());
+//            if (baixarAnexo == null) {
+//                return ResponseEntity.notFound().build();
+//            }
 
-            return ResponseEntity.ok()
-                    .contentType(baixarAnexo.mediaType())
-                    .body(baixarAnexo.resource());
-        }  catch (MalformedURLException e) {
-            return ResponseEntity.badRequest().build();
+//            return ResponseEntity.ok()
+//                    .contentType(baixarAnexo.mediaType())
+//                    .body(baixarAnexo.resource());
+            return ResponseEntity.status(302)
+                    .header(HttpHeaders.LOCATION, anexo.getCaminho())
+                    .build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao visualizar o anexo: " + e.getMessage());
         }
@@ -91,17 +92,15 @@ public class AnexoController {
             return ResponseEntity.status(403).body("Usuário não tem acesso à esse anexo!");
         }
         try {
-            AnexoDto baixarAnexo = anexoService.baixarAnexo(anexo.getId());
-            if (baixarAnexo == null) {
-                return ResponseEntity.notFound().build();
-            }
+//            AnexoDto baixarAnexo = anexoService.baixarAnexo(anexo.getId());
+//            if (baixarAnexo == null) {
+//                return ResponseEntity.notFound().build();
+//            }
 
-            return ResponseEntity.ok()
-                    .contentType(baixarAnexo.mediaType())
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baixarAnexo.nome() + "\"")
-                    .body(baixarAnexo.resource());
-        }  catch (MalformedURLException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(302)
+                    .header(HttpHeaders.LOCATION, anexo.getCaminho() + "?dl=1")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + anexo.getNome() + "\"")
+                    .build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao baixar o anexo: " + e.getMessage());
         }
