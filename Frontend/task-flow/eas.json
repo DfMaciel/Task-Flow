@@ -16,7 +16,7 @@
         "buildType": "apk"
       },
       "env": {
-        "SERVER_ROUTE": "task-flow-production.up.railway.app"
+        "SERVER_ROUTE": "https://task-flow-production.up.railway.app"
       }
     },
     "production": {
@@ -27,7 +27,7 @@
         "buildType": "apk"
       },
       "env": {
-        "SERVER_ROUTE": "task-flow-production.up.railway.app"
+        "SERVER_ROUTE": "https://task-flow-production.up.railway.app"
       }
     }
   },

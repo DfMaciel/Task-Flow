@@ -12,7 +12,7 @@ import formatDateTime from "@/utils/dateFormater";
 import formatPrazo from "@/utils/dateTimeParser";
 import { useRouter, useSearchParams } from "expo-router/build/hooks";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { View, Text, SectionList, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert } from "react-native";
+import { View, Text, SectionList, StyleSheet, Modal, TouchableOpacity, ScrollView, FlatList, RefreshControl, Platform, Alert, Share } from "react-native";
 import { Icon, IconButton, TextInput, Button } from "react-native-paper";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import atualizarTarefa from "@/services/tarefas/atualizarTarefa";
@@ -28,6 +28,7 @@ import SubTarefasComponent from "@/components/subTarefasComponent";
 import desvincularSubTarefa from "@/services/tarefas/desvincularSubTarefa";
 import vincularSubTarefa from "@/services/tarefas/vincularSubTarefa";
 import AdicionarSubTarefaComponent from "@/components/adicionarSubTarefaComponent";
+import * as Linking from 'expo-linking';
 
 
 export default function VisualizarTarefaPage() {
@@ -424,6 +425,20 @@ export default function VisualizarTarefaPage() {
             }
         }
     }
+
+    const onShare = async () => {
+        if (!tarefa) return;
+        try {
+            const url = Linking.createURL(`/home/tarefa/${id}`);
+            await Share.share({
+                title: `Tarefa: ${tarefa.titulo}`,
+                message: `Confira esta tarefa no Task-Flow: ${tarefa.titulo}\n${url}`,
+                url: url
+            });
+        } catch (error) {
+            Alert.alert("Erro", "Não foi possível compartilhar a tarefa.");
+        }
+    };
     
     return (
         <View style={{ flex: 1}}>
@@ -453,7 +468,18 @@ export default function VisualizarTarefaPage() {
                         style={[style.input]}
                     />
                 ) : (
-                    <Text style={style.title}>{tarefa?.titulo}</Text>
+                    <View style={style.headerButtons}>
+                        <Text style={style.title}>{tarefa?.titulo}</Text>
+
+                        <Button
+                            icon="share-variant"
+                            onPress={onShare}
+                            disabled={isEditing}
+                            labelStyle={{ fontSize: 16, fontWeight: "bold" }}
+                        >
+                            Compartilhar
+                        </Button>
+                    </View>
                 )}
                 {isEditing ? ( 
                     <View style={style.editableFieldsContainer}>
@@ -728,6 +754,12 @@ const style = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16
+    },
+    headerButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginRight: 0,
+        width: '100%',
     },
     title: {
         fontSize: 32,

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, FlatList, Alert, ScrollView } from "react-native";
-import { Text, Button, IconButton, Avatar, TextInput, Dialog, Portal, ActivityIndicator, useTheme, List } from "react-native-paper";
+import { Text, Button, IconButton, Avatar, TextInput, Dialog, Portal, ActivityIndicator, useTheme, List, Card, Title, Paragraph, Divider } from "react-native-paper";
 import listarCategorias from "@/services/categorias/listarCategorias";
 import { VisualizarCategoria } from "@/types/CategoriasInterface";
 import { useAuth } from "../authcontext";
@@ -15,6 +15,12 @@ import listarTarefasRecorrentes from "@/services/tarefasRecorrentes/listarTarefa
 import salvarTarefaRecorrente from "@/services/tarefasRecorrentes/salvarTarefaRecorrente";
 import excluirTarefaRecorrente from "@/services/tarefasRecorrentes/excluirTarefaRecorrente";
 import DropDownPicker from "react-native-dropdown-picker";
+import { Pedometer } from "expo-sensors";
+
+interface PassosDiarios {
+  date: string;
+  steps: number; 
+}
 
 export default function TelaUsuario() {
   const { logout } = useAuth();
@@ -56,6 +62,51 @@ export default function TelaUsuario() {
 
   const [openCategoria, setOpenCategoria] = useState(false);
   const [categoriasMapeadas, setCategoriasMapeadas] = useState<{ label: string; value: number }[]>([]);
+
+  const [isPedometerAvailable, setIsPedometerAvailable] = useState(false);
+  const [todayStepCount, setTodayStepCount] = useState(0);
+  const [weeklySteps, setWeeklySteps] = useState<PassosDiarios[]>([]);
+  
+  useEffect(() => {
+        const requestPermissionsAndFetchSteps = async () => {
+            const { status } = await Pedometer.requestPermissionsAsync();
+            if (status === 'granted') {
+                setIsPedometerAvailable(true);
+                
+                const end = new Date();
+                const start = new Date();
+                start.setHours(0, 0, 0, 0);
+                const todayResult = await Pedometer.getStepCountAsync(start, end);
+                if (todayResult) {
+                    setTodayStepCount(todayResult.steps);
+                }
+
+                const weeklyData: PassosDiarios[] = [];
+                for (let i = 6; i >= 0; i--) {
+                    const dayStart = new Date();
+                    dayStart.setDate(dayStart.getDate() - i);
+                    dayStart.setHours(0, 0, 0, 0);
+
+                    const dayEnd = new Date();
+                    dayEnd.setDate(dayEnd.getDate() - i);
+                    dayEnd.setHours(23, 59, 59, 999);
+                    
+                    const result = await Pedometer.getStepCountAsync(dayStart, dayEnd);
+                    weeklyData.push({
+                        date: dayStart.toLocaleDateString('pt-BR', { weekday: 'short' }),
+                        steps: result.steps,
+                    });
+                }
+                setWeeklySteps(weeklyData);
+
+            } else {
+                setIsPedometerAvailable(false);
+            }
+            setLoading(false);
+        };
+
+        requestPermissionsAndFetchSteps();
+    }, []);
 
   async function fetchUsuario() {
     setLoading(true);
@@ -509,6 +560,30 @@ export default function TelaUsuario() {
       >
         Adicionar Tarefa Recorrente
       </Button>
+      
+      <Card style={styles.card}>
+          <Card.Content>
+              <Title style={styles.cardTitle}>Weekly Steps</Title>
+              {loading ? (
+                  <ActivityIndicator animating={true} />
+              ) : isPedometerAvailable ? (
+                  <>
+                      <Paragraph style={styles.stepsToday}>Today: {todayStepCount.toLocaleString()} steps</Paragraph>
+                      <Divider style={{ marginVertical: 10 }} />
+                      {weeklySteps.map((day, index) => (
+                          <View key={index} style={styles.dayRow}>
+                              <Text style={styles.dayText}>{day.date}</Text>
+                              <Text style={styles.daySteps}>{day.steps.toLocaleString()}</Text>
+                          </View>
+                      ))}
+                  </>
+              ) : (
+                  <Paragraph style={styles.permissionText}>
+                      Step counting permission not granted. Please enable it in your device settings.
+                  </Paragraph>
+              )}
+          </Card.Content>
+      </Card>
 
       <Button
         mode="outlined"
@@ -760,4 +835,35 @@ const styles = StyleSheet.create({
   dropdownContainer: {
       backgroundColor: 'white',
   },
+  card: {
+    width: '100%',
+    marginVertical: 10,
+  },
+  cardTitle: {
+      textAlign: 'center',
+      marginBottom: 15,
+  },
+  stepsToday: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      color: '#6750A4',
+  },
+  dayRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+  },
+  dayText: {
+      fontSize: 16,
+  },
+  daySteps: {
+      fontSize: 16,
+      fontWeight: 'bold',
+  },
+  permissionText: {
+      textAlign: 'center',
+      padding: 10,
+  }
 });

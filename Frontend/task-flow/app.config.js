@@ -5,7 +5,8 @@ export default ({ config }) => ({
   expo: {
     name: "TaskFlow",
     slug: "task-flow",
-    scheme: "myapp",
+    scheme: "taskflow",
+    owner: "davi_maciel",
     extra: {
       SERVER_ROUTE: process.env.SERVER_ROUTE,
       eas: {
@@ -17,15 +18,20 @@ export default ({ config }) => ({
     userInterfaceStyle: "automatic",
     newArchEnabled: true, // Note: Consider if you really need/want the new architecture enabled.
     ios: {
+      bundleIdentifier: "com.davi_maciel.taskflow",
       supportsTablet: true,
       infoPlist: {
         NSCalendarsUsageDescription: "Esta aplicação precisa de acesso ao seu calendário para adicionar e gerenciar prazos de tarefas.",
-      }
+      },
+      associatedDomains: [
+        "applinks:expo.dev"
+      ]
     },
     android: {
       package: "com.davi_maciel.taskflow", 
       adaptiveIcon: {
-        backgroundColor: "#ffffff" 
+        backgroundColor: "#ffffff",
+        foregroundImage: "./assets/tasfklowlogo.png"
       },
       permissions: [ 
         "android.permission.CAMERA",
@@ -33,9 +39,22 @@ export default ({ config }) => ({
         "android.permission.WRITE_EXTERNAL_STORAGE", 
         "android.permission.INTERNET",
         "android.permission.READ_CALENDAR",    
-        "android.permission.WRITE_CALENDAR"
+        "android.permission.WRITE_CALENDAR",
+        "android.permission.ACTIVITY_RECOGNITION"
       ],
-      usesCleartextTraffic: true 
+      usesCleartextTraffic: true ,
+      intentFilters: [
+        {
+          action: "VIEW",
+          autoVerify: true,
+          data: {
+            scheme: "https",
+            host: "expo.dev",
+            pathPrefix: "/@davi_maciel/task-flow"
+          },
+          category: ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     web: { 
       bundler: "metro",
@@ -44,6 +63,12 @@ export default ({ config }) => ({
     plugins: [ 
       "expo-router",
       "expo-localization",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Permita o $(PRODUCT_NAME) a acessar os sensores de movimento do seu dispositivo para monitor a sua atividade física.",
+        }
+      ]
     ],
     experiments: {
       typedRoutes: true
