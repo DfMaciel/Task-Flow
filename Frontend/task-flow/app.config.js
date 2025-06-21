@@ -31,7 +31,7 @@ export default ({ config }) => ({
       package: "com.davi_maciel.taskflow", 
       adaptiveIcon: {
         backgroundColor: "#ffffff",
-        foregroundImage: "./assets/tasfklowlogo.png"
+        foregroundImage: "./taskflowlogo.png"
       },
       permissions: [ 
         "android.permission.CAMERA",
