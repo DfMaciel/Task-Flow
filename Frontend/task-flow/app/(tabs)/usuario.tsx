@@ -563,12 +563,12 @@ export default function TelaUsuario() {
       
       <Card style={styles.card}>
           <Card.Content>
-              <Title style={styles.cardTitle}>Weekly Steps</Title>
+              <Title style={styles.cardTitle}>Passos semanais</Title>
               {loading ? (
                   <ActivityIndicator animating={true} />
               ) : isPedometerAvailable ? (
                   <>
-                      <Paragraph style={styles.stepsToday}>Today: {todayStepCount.toLocaleString()} steps</Paragraph>
+                      <Paragraph style={styles.stepsToday}>Hoje: {todayStepCount.toLocaleString()} passos</Paragraph>
                       <Divider style={{ marginVertical: 10 }} />
                       {weeklySteps.map((day, index) => (
                           <View key={index} style={styles.dayRow}>
@@ -579,7 +579,7 @@ export default function TelaUsuario() {
                   </>
               ) : (
                   <Paragraph style={styles.permissionText}>
-                      Step counting permission not granted. Please enable it in your device settings.
+                      Permissão de contagem de passos não concedida. Por favor, ative nas configurações do dispositivo.
                   </Paragraph>
               )}
           </Card.Content>

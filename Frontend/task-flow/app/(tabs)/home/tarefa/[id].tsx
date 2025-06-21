@@ -429,7 +429,7 @@ export default function VisualizarTarefaPage() {
     const onShare = async () => {
         if (!tarefa) return;
         try {
-            const url = Linking.createURL(`/home/tarefa/${id}`);
+            const url = Linking.createURL(`home/tarefa/${id}`);
             await Share.share({
                 title: `Tarefa: ${tarefa.titulo}`,
                 message: `Confira esta tarefa no Task-Flow: ${tarefa.titulo}\n${url}`,
