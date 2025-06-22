@@ -29,6 +29,7 @@ import desvincularSubTarefa from "@/services/tarefas/desvincularSubTarefa";
 import vincularSubTarefa from "@/services/tarefas/vincularSubTarefa";
 import AdicionarSubTarefaComponent from "@/components/adicionarSubTarefaComponent";
 import * as Linking from 'expo-linking';
+import { createShareLink } from "@/utils/createShareLink";
 
 
 export default function VisualizarTarefaPage() {
@@ -429,7 +430,7 @@ export default function VisualizarTarefaPage() {
     const onShare = async () => {
         if (!tarefa) return;
         try {
-            const url = Linking.createURL(`home/tarefa/${id}`);
+            const url = createShareLink(`home/tarefa/${id}`);
             await Share.share({
                 title: `Tarefa: ${tarefa.titulo}`,
                 message: `Confira esta tarefa no Task-Flow: ${tarefa.titulo}\n${url}`,

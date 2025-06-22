@@ -5,7 +5,6 @@ export default ({ config }) => ({
   expo: {
     name: "TaskFlow",
     slug: "task-flow",
-    scheme: "taskflow",
     owner: "davi_maciel",
     extra: {
       SERVER_ROUTE: process.env.SERVER_ROUTE,
@@ -47,11 +46,13 @@ export default ({ config }) => ({
         {
           action: "VIEW",
           autoVerify: true,
-          data: {
+          data: [
+            {
             scheme: "https",
             host: "expo.dev",
             pathPrefix: "/@davi_maciel/task-flow"
-          },
+            }
+          ],
           category: ["BROWSABLE", "DEFAULT"]
         }
       ]
