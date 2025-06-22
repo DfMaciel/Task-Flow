@@ -5,6 +5,7 @@ export default ({ config }) => ({
   expo: {
     name: "TaskFlow",
     slug: "task-flow",
+    scheme: "taskflow",
     owner: "davi_maciel",
     extra: {
       SERVER_ROUTE: process.env.SERVER_ROUTE,
@@ -54,6 +55,11 @@ export default ({ config }) => ({
             }
           ],
           category: ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [{ "scheme": "health-connect", "host": "permissions" }]
         }
       ]
     },
@@ -65,9 +71,9 @@ export default ({ config }) => ({
       "expo-router",
       "expo-localization",
       [
-        "expo-sensors",
+        "react-native-health-connect",
         {
-          "motionPermission": "Permita o $(PRODUCT_NAME) a acessar os sensores de movimento do seu dispositivo para monitor a sua atividade física.",
+          "permissions": ["android.permission.health.READ_STEPS"]
         }
       ]
     ],

@@ -25,32 +25,23 @@ function ProtectedLayout() {
   useEffect(() => {
     async function prepareApp() {
       if (loading) {
-      return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <PaperProvider theme={MD3LightTheme}>
-          <ActivityIndicator
-            size="large"
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          />
-        </PaperProvider>
-      </GestureHandlerRootView>
-    );
+      return;
     }
 
-    // if (url  && !isDeepLinkHandled) {
-    //   setIsDeepLinkHandled(true);
-    //   const path = url.split('/--/')[1];
-    //   if (path) {
-    //     console.log(`Navigating to deep link path: /${path}`);
-    //     router.navigate(`/${path}`);
-    //   }
-    //   return;
-    // }
+    if (url  && !isDeepLinkHandled) {
+      setIsDeepLinkHandled(true);
+      const path = url.split('/--/')[1];
+      if (path) {
+        console.log(`Navigating to deep link path: /${path}`);
+        router.replace(`/${path}`);
+      }
+      return;
+    }
     try {
 
-      // if (segments.length === 0 || isDeepLinkHandled) {
-      //   return;
-      // }
+      if (segments.length === 0 || isDeepLinkHandled) {
+        return;
+      }
 
       const inAuthGroup = segments?.[0] === "login";
       const isNotFound = segments?.[0] === "+not-found";
@@ -90,7 +81,16 @@ function ProtectedLayout() {
   }, [router]);
 
   if (loading) {
-    
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <PaperProvider theme={MD3LightTheme}>
+          <ActivityIndicator
+            size="large"
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          />
+        </PaperProvider>
+      </GestureHandlerRootView>
+    );
   }
   
   async function configurarNotificacoes() {

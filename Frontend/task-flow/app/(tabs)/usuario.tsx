@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { View, StyleSheet, FlatList, Alert, ScrollView } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { View, StyleSheet, FlatList, Alert, ScrollView, Platform, AppState, Linking } from "react-native";
 import { Text, Button, IconButton, Avatar, TextInput, Dialog, Portal, ActivityIndicator, useTheme, List, Card, Title, Paragraph, Divider } from "react-native-paper";
 import listarCategorias from "@/services/categorias/listarCategorias";
 import { VisualizarCategoria } from "@/types/CategoriasInterface";
@@ -15,12 +15,7 @@ import listarTarefasRecorrentes from "@/services/tarefasRecorrentes/listarTarefa
 import salvarTarefaRecorrente from "@/services/tarefasRecorrentes/salvarTarefaRecorrente";
 import excluirTarefaRecorrente from "@/services/tarefasRecorrentes/excluirTarefaRecorrente";
 import DropDownPicker from "react-native-dropdown-picker";
-import { Pedometer } from "expo-sensors";
-
-interface PassosDiarios {
-  date: string;
-  steps: number; 
-}
+import { initialize, requestPermission, readRecords } from 'react-native-health-connect';
 
 export default function TelaUsuario() {
   const { logout } = useAuth();
@@ -63,50 +58,73 @@ export default function TelaUsuario() {
   const [openCategoria, setOpenCategoria] = useState(false);
   const [categoriasMapeadas, setCategoriasMapeadas] = useState<{ label: string; value: number }[]>([]);
 
-  const [isPedometerAvailable, setIsPedometerAvailable] = useState(false);
+  const [hasPermissions, setHasPermissions] = useState(false);
   const [todayStepCount, setTodayStepCount] = useState(0);
-  const [weeklySteps, setWeeklySteps] = useState<PassosDiarios[]>([]);
   
-  useEffect(() => {
-        const requestPermissionsAndFetchSteps = async () => {
-            const { status } = await Pedometer.requestPermissionsAsync();
-            if (status === 'granted') {
-                setIsPedometerAvailable(true);
-                
-                const end = new Date();
-                const start = new Date();
-                start.setHours(0, 0, 0, 0);
-                const todayResult = await Pedometer.getStepCountAsync(start, end);
-                if (todayResult) {
-                    setTodayStepCount(todayResult.steps);
-                }
+  const readStepCount = useCallback(async () => {
+    const today = new Date();
+    const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+    const endTime = new Date().toISOString();
 
-                const weeklyData: PassosDiarios[] = [];
-                for (let i = 6; i >= 0; i--) {
-                    const dayStart = new Date();
-                    dayStart.setDate(dayStart.getDate() - i);
-                    dayStart.setHours(0, 0, 0, 0);
-
-                    const dayEnd = new Date();
-                    dayEnd.setDate(dayEnd.getDate() - i);
-                    dayEnd.setHours(23, 59, 59, 999);
-                    
-                    const result = await Pedometer.getStepCountAsync(dayStart, dayEnd);
-                    weeklyData.push({
-                        date: dayStart.toLocaleDateString('pt-BR', { weekday: 'short' }),
-                        steps: result.steps,
-                    });
-                }
-                setWeeklySteps(weeklyData);
-
-            } else {
-                setIsPedometerAvailable(false);
-            }
-            setLoading(false);
-        };
-
-        requestPermissionsAndFetchSteps();
+    try {
+        const records = await readRecords('Steps', {
+            timeRangeFilter: { operator: 'between', startTime, endTime },
+        });
+        const totalSteps = records.reduce((sum, record) => sum + record.count, 0);
+        setTodayStepCount(totalSteps);
+    } catch (error) {
+        console.error("Error reading steps from Health Connect:", error);
+    }
     }, []);
+
+    const setupHealthConnect = useCallback(async () => {
+        setLoading(true);
+        try {
+            const isInitialized = await initialize();
+            if (!isInitialized) {
+                console.error("Failed to initialize Health Connect. Is it installed on the device?");
+                setHasPermissions(false);
+                return;
+            }
+
+            const grantedPermissions = await requestPermission([{ accessType: 'read', recordType: 'Steps' }]);
+            const hasReadStepsPermission = grantedPermissions.some(p => p.recordType === 'Steps' && p.accessType === 'read');
+            
+            setHasPermissions(hasReadStepsPermission);
+
+            if (hasReadStepsPermission) {
+                await readStepCount();
+            }
+        } catch (error) {
+            console.error("Health Connect setup error:", error);
+            setHasPermissions(false);
+        } finally {
+            setLoading(false);
+        }
+    }, [readStepCount]);
+
+    useEffect(() => {
+        if (Platform.OS !== 'android') {
+            setLoading(false);
+            return;
+        }
+
+        setupHealthConnect();
+
+        const appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
+            if (nextAppState === 'active') {
+                setupHealthConnect();
+            }
+        });
+
+        return () => {
+            appStateSubscription.remove();
+        };
+    }, [setupHealthConnect]);
+
+    const openHealthConnectSettings = () => {
+        Linking.openURL("health-connect://opensettings");
+    };
 
   async function fetchUsuario() {
     setLoading(true);
@@ -563,25 +581,24 @@ export default function TelaUsuario() {
       
       <Card style={styles.card}>
           <Card.Content>
-              <Title style={styles.cardTitle}>Passos semanais</Title>
+              <Title style={styles.cardTitle}>Contador de passos</Title>
               {loading ? (
                   <ActivityIndicator animating={true} />
-              ) : isPedometerAvailable ? (
-                  <>
-                      <Paragraph style={styles.stepsToday}>Hoje: {todayStepCount.toLocaleString()} passos</Paragraph>
-                      <Divider style={{ marginVertical: 10 }} />
-                      {weeklySteps.map((day, index) => (
-                          <View key={index} style={styles.dayRow}>
-                              <Text style={styles.dayText}>{day.date}</Text>
-                              <Text style={styles.daySteps}>{day.steps.toLocaleString()}</Text>
-                          </View>
-                      ))}
-                  </>
-              ) : (
-                  <Paragraph style={styles.permissionText}>
-                      Permissão de contagem de passos não concedida. Por favor, ative nas configurações do dispositivo.
-                  </Paragraph>
-              )}
+              ) : Platform.OS !== 'android' ? (
+                  <Paragraph style={styles.permissionText}>Contador de passos disponível apenas no Android.</Paragraph>
+                    ) : hasPermissions ? (
+                        <>
+                            <Paragraph style={styles.stepsToday}>Hoje: {todayStepCount.toLocaleString()} passos</Paragraph>
+                            <Button onPress={readStepCount} style={{marginTop: 10}}>Atualizar</Button>
+                        </>
+                    ) : (
+                        <>
+                            <Paragraph style={styles.permissionText}>
+                                Para ver seus passos, autorize o Task-Flow no app Health Connect.
+                            </Paragraph>
+                            <Button onPress={setupHealthConnect}>Tentar Novamente</Button>
+                        </>
+                    )}
           </Card.Content>
       </Card>
 
