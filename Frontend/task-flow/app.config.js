@@ -29,6 +29,7 @@ export default ({ config }) => ({
     },
     android: {
       package: "com.davi_maciel.taskflow", 
+      minSdkVersion: 26,
       adaptiveIcon: {
         backgroundColor: "#ffffff",
         foregroundImage: "./taskflowlogo.png"
