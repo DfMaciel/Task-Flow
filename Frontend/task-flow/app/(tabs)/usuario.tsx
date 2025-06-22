@@ -15,7 +15,7 @@ import listarTarefasRecorrentes from "@/services/tarefasRecorrentes/listarTarefa
 import salvarTarefaRecorrente from "@/services/tarefasRecorrentes/salvarTarefaRecorrente";
 import excluirTarefaRecorrente from "@/services/tarefasRecorrentes/excluirTarefaRecorrente";
 import DropDownPicker from "react-native-dropdown-picker";
-import { initialize, requestPermission, readRecords } from 'react-native-health-connect';
+import { initialize, requestPermission, readRecords } from 'expo-health-connect';
 
 export default function TelaUsuario() {
   const { logout } = useAuth();
@@ -62,6 +62,8 @@ export default function TelaUsuario() {
   const [todayStepCount, setTodayStepCount] = useState(0);
   
   const readStepCount = useCallback(async () => {
+    if (!hasPermissions) return;
+
     const today = new Date();
     const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
     const endTime = new Date().toISOString();
@@ -82,7 +84,14 @@ export default function TelaUsuario() {
         try {
             const isInitialized = await initialize();
             if (!isInitialized) {
-                console.error("Failed to initialize Health Connect. Is it installed on the device?");
+                Alert.alert(
+                    "Health Connect não instalado",
+                    "Para usar esta funcionalidade, por favor instale o aplicativo Health Connect.",
+                    [
+                        { text: "Cancelar", style: "cancel" },
+                        { text: "Instalar", onPress: () => Linking.openURL('market://details?id=com.google.android.apps.healthdata').catch(() => Alert.alert("Erro", "Não foi possível abrir a Play Store.")) }
+                    ]
+                );
                 setHasPermissions(false);
                 return;
             }

@@ -41,7 +41,8 @@ export default ({ config }) => ({
         "android.permission.READ_CALENDAR",    
         "android.permission.WRITE_CALENDAR",
         "android.permission.ACTIVITY_RECOGNITION",
-        "android.permission.health.READ_STEPS"
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.WRITE_STEPS"
       ],
       usesCleartextTraffic: true ,
       intentFilters: [
@@ -59,8 +60,13 @@ export default ({ config }) => ({
         },
         {
           "action": "VIEW",
-          "category": ["BROWSABLE", "DEFAULT"],
-          "data": [{ "scheme": "health-connect", "host": "permissions" }]
+          "data": [
+            {
+              "scheme": "health-connect",
+              "host": "permissions"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -71,7 +77,7 @@ export default ({ config }) => ({
     plugins: [ 
       "expo-router",
       "expo-localization",
-      "react-native-health-connect",
+      "expo-health-connect",
       [
         "expo-build-properties",
         {
