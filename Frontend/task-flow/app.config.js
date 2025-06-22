@@ -77,7 +77,7 @@ export default ({ config }) => ({
         {
           "android": {
             "minSdkVersion": 26,
-            "compileSdkVersion": 34,
+            "compileSdkVersion": 35,
             "targetSdkVersion": 34
           }
         }
