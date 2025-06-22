@@ -15,7 +15,11 @@ import listarTarefasRecorrentes from "@/services/tarefasRecorrentes/listarTarefa
 import salvarTarefaRecorrente from "@/services/tarefasRecorrentes/salvarTarefaRecorrente";
 import excluirTarefaRecorrente from "@/services/tarefasRecorrentes/excluirTarefaRecorrente";
 import DropDownPicker from "react-native-dropdown-picker";
-import { initialize, requestPermission, readRecords } from 'react-native-health-connect';
+// import requestPermissions from "expo-health-connect";
+// import isAvailable from "expo-health-connect";
+// import HealthConnectPermission from "expo-health-connect";
+// import readRecords from "expo-health-connect";
+import { isAvailable, requestPermissions, readRecords, HealthConnectPermission } from 'expo-health-connect/build/index';
 
 export default function TelaUsuario() {
   const { logout } = useAuth();
@@ -80,15 +84,16 @@ export default function TelaUsuario() {
     const setupHealthConnect = useCallback(async () => {
         setLoading(true);
         try {
-            const isInitialized = await initialize();
+            const isInitialized = await isAvailable();
             if (!isInitialized) {
                 console.error("Failed to initialize Health Connect. Is it installed on the device?");
                 setHasPermissions(false);
                 return;
             }
 
-            const grantedPermissions = await requestPermission([{ accessType: 'read', recordType: 'Steps' }]);
-            const hasReadStepsPermission = grantedPermissions.some(p => p.recordType === 'Steps' && p.accessType === 'read');
+            const permissions = [HealthConnectPermission.Steps];
+            const grantedPermissions = await requestPermissions(permissions);
+            const hasReadStepsPermission = grantedPermissions.includes(HealthConnectPermission.Steps);
             
             setHasPermissions(hasReadStepsPermission);
 
@@ -121,10 +126,6 @@ export default function TelaUsuario() {
             appStateSubscription.remove();
         };
     }, [setupHealthConnect]);
-
-    const openHealthConnectSettings = () => {
-        Linking.openURL("health-connect://opensettings");
-    };
 
   async function fetchUsuario() {
     setLoading(true);

@@ -70,17 +70,14 @@ export default ({ config }) => ({
     plugins: [ 
       "expo-router",
       "expo-localization",
-      [
-        "react-native-health-connect",
-        {
-          "permissions": ["android.permission.health.READ_STEPS"]
-        }
-      ],
+      "expo-health-connect",
       [
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 26
+            "minSdkVersion": 26,
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34
           }
         }
       ]
