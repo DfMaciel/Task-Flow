@@ -29,7 +29,6 @@ export default ({ config }) => ({
     },
     android: {
       package: "com.davi_maciel.taskflow", 
-      minSdkVersion: 26,
       adaptiveIcon: {
         backgroundColor: "#ffffff",
         foregroundImage: "./taskflowlogo.png"
@@ -75,6 +74,14 @@ export default ({ config }) => ({
         "react-native-health-connect",
         {
           "permissions": ["android.permission.health.READ_STEPS"]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
         }
       ]
     ],
