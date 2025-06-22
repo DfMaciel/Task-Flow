@@ -40,7 +40,8 @@ export default ({ config }) => ({
         "android.permission.INTERNET",
         "android.permission.READ_CALENDAR",    
         "android.permission.WRITE_CALENDAR",
-        "android.permission.ACTIVITY_RECOGNITION"
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.health.READ_STEPS"
       ],
       usesCleartextTraffic: true ,
       intentFilters: [
@@ -70,7 +71,7 @@ export default ({ config }) => ({
     plugins: [ 
       "expo-router",
       "expo-localization",
-      "expo-health-connect",
+      "react-native-health-connect",
       [
         "expo-build-properties",
         {
