@@ -15,7 +15,6 @@ import listarTarefasRecorrentes from "@/services/tarefasRecorrentes/listarTarefa
 import salvarTarefaRecorrente from "@/services/tarefasRecorrentes/salvarTarefaRecorrente";
 import excluirTarefaRecorrente from "@/services/tarefasRecorrentes/excluirTarefaRecorrente";
 import DropDownPicker from "react-native-dropdown-picker";
-import { initialize, requestPermission, readRecords } from 'react-native-health-connect';
 
 export default function TelaUsuario() {
   const { logout } = useAuth();
@@ -57,74 +56,6 @@ export default function TelaUsuario() {
 
   const [openCategoria, setOpenCategoria] = useState(false);
   const [categoriasMapeadas, setCategoriasMapeadas] = useState<{ label: string; value: number }[]>([]);
-
-  const [hasPermissions, setHasPermissions] = useState(false);
-  const [todayStepCount, setTodayStepCount] = useState(0);
-  
-  const readStepCount = useCallback(async () => {
-    const today = new Date();
-    const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
-    const endTime = new Date().toISOString();
-
-    try {
-        const records = await readRecords('Steps', {
-            timeRangeFilter: { operator: 'between', startTime, endTime },
-        });
-        const totalSteps = records.reduce((sum, record) => sum + record.count, 0);
-        setTodayStepCount(totalSteps);
-    } catch (error) {
-        console.error("Error reading steps from Health Connect:", error);
-    }
-    }, []);
-
-    const setupHealthConnect = useCallback(async () => {
-        setLoading(true);
-        try {
-            const isInitialized = await initialize();
-            if (!isInitialized) {
-                console.error("Failed to initialize Health Connect. Is it installed on the device?");
-                setHasPermissions(false);
-                return;
-            }
-
-            const grantedPermissions = await requestPermission([{ accessType: 'read', recordType: 'Steps' }]);
-            const hasReadStepsPermission = grantedPermissions.some(p => p.recordType === 'Steps' && p.accessType === 'read');
-            
-            setHasPermissions(hasReadStepsPermission);
-
-            if (hasReadStepsPermission) {
-                await readStepCount();
-            }
-        } catch (error) {
-            console.error("Health Connect setup error:", error);
-            setHasPermissions(false);
-        } finally {
-            setLoading(false);
-        }
-    }, [readStepCount]);
-
-    useEffect(() => {
-        if (Platform.OS !== 'android') {
-            setLoading(false);
-            return;
-        }
-
-        setupHealthConnect();
-
-        const appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
-            if (nextAppState === 'active') {
-                setupHealthConnect();
-            }
-        });
-
-        return () => {
-            appStateSubscription.remove();
-        };
-    }, [setupHealthConnect]);
-
-    const openHealthConnectSettings = () => {
-        Linking.openURL("health-connect://opensettings");
-    };
 
   async function fetchUsuario() {
     setLoading(true);
@@ -578,29 +509,6 @@ export default function TelaUsuario() {
       >
         Adicionar Tarefa Recorrente
       </Button>
-      
-      <Card style={styles.card}>
-          <Card.Content>
-              <Title style={styles.cardTitle}>Contador de passos</Title>
-              {loading ? (
-                  <ActivityIndicator animating={true} />
-              ) : Platform.OS !== 'android' ? (
-                  <Paragraph style={styles.permissionText}>Contador de passos disponível apenas no Android.</Paragraph>
-                    ) : hasPermissions ? (
-                        <>
-                            <Paragraph style={styles.stepsToday}>Hoje: {todayStepCount.toLocaleString()} passos</Paragraph>
-                            <Button onPress={readStepCount} style={{marginTop: 10}}>Atualizar</Button>
-                        </>
-                    ) : (
-                        <>
-                            <Paragraph style={styles.permissionText}>
-                                Para ver seus passos, autorize o Task-Flow no app Health Connect.
-                            </Paragraph>
-                            <Button onPress={setupHealthConnect}>Tentar Novamente</Button>
-                        </>
-                    )}
-          </Card.Content>
-      </Card>
 
       <Button
         mode="outlined"
@@ -852,35 +760,4 @@ const styles = StyleSheet.create({
   dropdownContainer: {
       backgroundColor: 'white',
   },
-  card: {
-    width: '100%',
-    marginVertical: 10,
-  },
-  cardTitle: {
-      textAlign: 'center',
-      marginBottom: 15,
-  },
-  stepsToday: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      color: '#6750A4',
-  },
-  dayRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-  },
-  dayText: {
-      fontSize: 16,
-  },
-  daySteps: {
-      fontSize: 16,
-      fontWeight: 'bold',
-  },
-  permissionText: {
-      textAlign: 'center',
-      padding: 10,
-  }
 });

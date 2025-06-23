@@ -40,7 +40,6 @@ export default ({ config }) => ({
         "android.permission.INTERNET",
         "android.permission.READ_CALENDAR",    
         "android.permission.WRITE_CALENDAR",
-        "android.permission.ACTIVITY_RECOGNITION"
       ],
       usesCleartextTraffic: true ,
       intentFilters: [
@@ -56,11 +55,6 @@ export default ({ config }) => ({
           ],
           category: ["BROWSABLE", "DEFAULT"]
         },
-        {
-          "action": "VIEW",
-          "category": ["BROWSABLE", "DEFAULT"],
-          "data": [{ "scheme": "health-connect", "host": "permissions" }]
-        }
       ]
     },
     web: { 
@@ -70,12 +64,6 @@ export default ({ config }) => ({
     plugins: [ 
       "expo-router",
       "expo-localization",
-      [
-        "react-native-health-connect",
-        {
-          "permissions": ["android.permission.health.READ_STEPS"]
-        }
-      ]
     ],
     experiments: {
       typedRoutes: true
